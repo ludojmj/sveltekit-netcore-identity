@@ -1,0 +1,17 @@
+{
+  "id": "2",
+  "label": "bbb",
+  "description": "bbb",
+  "otherInfo": "bbb",
+  "createdAt": "1901-03-26T19:19:43.9789358Z",
+  "updatedAt": "1901-03-26T21:02:59.8469004Z",
+  "user": {
+    "id": "1",
+    "name": "Alice Smith",
+    "givenName": "Alice",
+    "familyName": "Smith",
+    "email": "AliceSmith@email.com",
+    "createdAt": "1901-03-26T20:54:31.7299699Z",
+    "updatedAt": null
+  }
+}

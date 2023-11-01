@@ -1,0 +1,17 @@
+{
+  "id": "1",
+  "label": "aaa",
+  "description": "aaa",
+  "otherInfo": "aaa",
+  "createdAt": "1901-03-26T19:18:37.781402Z",
+  "updatedAt": "1901-03-26T21:03:05.3683671Z",
+  "user": {
+    "id": "1",
+    "name": "Alice Smith",
+    "givenName": "Alice",
+    "familyName": "Smith",
+    "email": "AliceSmith@email.com",
+    "createdAt": "1901-03-26T20:54:31.7299699Z",
+    "updatedAt": null
+  }
+}
