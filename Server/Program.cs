@@ -112,6 +112,7 @@ builder.Services.AddScoped<IStuffService, StuffService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseHttpHeaders();
 app.UseExceptionHandler("/api/Error");
 app.UseHsts();
 app.UseHttpsRedirection();
@@ -155,7 +156,6 @@ else
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseSecurity();
 if (hasHttpLogs)
 {
     app.UseHttpLogging();
@@ -166,11 +166,8 @@ if (hasHttpLogs)
         await next();
     });
 }
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllers().RequireAuthorization();
-    endpoints.MapFallbackToFile("/index.html");
-    endpoints.MapHealthChecks("/health");
-});
+app.MapControllers().RequireAuthorization();
+app.MapFallbackToFile("/index.html");
+app.MapHealthChecks("/health");
 
 app.Run();

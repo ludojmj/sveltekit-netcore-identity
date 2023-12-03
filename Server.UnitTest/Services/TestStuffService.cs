@@ -14,6 +14,9 @@ namespace Server.UnitTest.Services;
 
 public class TestStuffService
 {
+    private readonly StuffDbContext _dbContext;
+    private readonly IStuffService _stuffService;
+
     private static readonly UserModel TestUserModel = new()
     {
         Id = "11",
@@ -50,9 +53,6 @@ public class TestStuffService
         StfOtherInfo = "OtherInfo",
         StfCreatedAt = DateTime.UtcNow.ToString("o")
     };
-
-    private readonly StuffDbContext _dbContext;
-    private readonly IStuffService _stuffService;
 
     public TestStuffService()
     {

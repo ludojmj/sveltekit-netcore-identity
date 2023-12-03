@@ -11,16 +11,25 @@ namespace Server.UnitTest.Shared;
 
 public class TestErrorController
 {
+    public readonly IHostEnvironment _env;
+    public readonly ILogger<ErrorController> _logger;
+    public readonly IExceptionHandlerFeature _exception;
+
+    public TestErrorController()
+    {
+        _env = Mock.Of<IHostEnvironment>();
+        _logger = Mock.Of<ILogger<ErrorController>>();
+        _exception = Mock.Of<IExceptionHandlerFeature>(x => x.Error == new ArgumentException("Should be displayed"));
+    }
+
     [Fact]
     public void ErrorController_NotFoundObjectResult()
     {
         // Arrange
-        var mockEnv = Mock.Of<IHostEnvironment>();
-        var mockLogger = Mock.Of<ILogger<ErrorController>>();
-        var mockException = Mock.Of<IExceptionHandlerFeature>(x => x.Error == new KeyNotFoundException("Not found"));
+        Mock.Get(_exception).Setup(x => x.Error).Returns(new KeyNotFoundException("Not found"));
 
         var context = new DefaultHttpContext();
-        context.Features.Set(mockException);
+        context.Features.Set(_exception);
 
         var controller = new ErrorController()
         {
@@ -28,7 +37,7 @@ public class TestErrorController
         };
 
         // Act
-        IActionResult actionResult = controller.Error(mockEnv, mockLogger);
+        IActionResult actionResult = controller.Error(_env, _logger);
 
         // Assert
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(actionResult);
@@ -41,12 +50,10 @@ public class TestErrorController
     public void ErrorHandlerFilter_BadRequestObjectResult_Development()
     {
         // Arrange
-        var mockEnv = Mock.Of<IHostEnvironment>(x => x.EnvironmentName == "Development");
-        var mockLogger = Mock.Of<ILogger<ErrorController>>();
-        var mockException = Mock.Of<IExceptionHandlerFeature>(x => x.Error == new ArgumentException("Should be displayed"));
+        Mock.Get(_env).Setup(x => x.EnvironmentName).Returns("Development");
 
         var context = new DefaultHttpContext();
-        context.Features.Set(mockException);
+        context.Features.Set(_exception);
 
         var controller = new ErrorController()
         {
@@ -54,7 +61,7 @@ public class TestErrorController
         };
 
         // Act
-        IActionResult actionResult = controller.Error(mockEnv, mockLogger);
+        IActionResult actionResult = controller.Error(_env, _logger);
 
         // Assert
         var notFoundResult = Assert.IsType<BadRequestObjectResult>(actionResult);
@@ -67,12 +74,10 @@ public class TestErrorController
     public void ErrorHandlerFilter_BadRequestObjectResult_Production()
     {
         // Arrange
-        var mockEnv = Mock.Of<IHostEnvironment>(x => x.EnvironmentName == "Production");
-        var mockLogger = Mock.Of<ILogger<ErrorController>>();
-        var mockException = Mock.Of<IExceptionHandlerFeature>(x => x.Error == new ArgumentException("Should not be displayed"));
+        Mock.Get(_env).Setup(x => x.EnvironmentName).Returns("Production");
 
         var context = new DefaultHttpContext();
-        context.Features.Set(mockException);
+        context.Features.Set(_exception);
 
         var controller = new ErrorController()
         {
@@ -80,7 +85,7 @@ public class TestErrorController
         };
 
         // Act
-        IActionResult actionResult = controller.Error(mockEnv, mockLogger);
+        IActionResult actionResult = controller.Error(_env, _logger);
 
         // Assert
         var notFoundResult = Assert.IsType<BadRequestObjectResult>(actionResult);

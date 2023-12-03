@@ -12,7 +12,14 @@ const TokenRenewMode = {
   id_token_invalid: "id_token_invalid"
 };
 const openidWellknownUrlEndWith = "/.well-known/openid-configuration";
-const version = "7.7.3";
+function normalizeUrl(url) {
+  try {
+    return new URL(url).toString();
+  } catch (error) {
+    console.error(`Failed to normalize url: ${url}`);
+    return url;
+  }
+}
 function checkDomain(domains, endpoint) {
   if (!endpoint) {
     return;
@@ -49,10 +56,10 @@ const getCurrentDatabaseDomain = (database2, url, trustedDomains2) => {
     if (!oidcServerConfiguration) {
       continue;
     }
-    if (oidcServerConfiguration.tokenEndpoint && url === oidcServerConfiguration.tokenEndpoint) {
+    if (oidcServerConfiguration.tokenEndpoint && url === normalizeUrl(oidcServerConfiguration.tokenEndpoint)) {
       continue;
     }
-    if (oidcServerConfiguration.revocationEndpoint && url === oidcServerConfiguration.revocationEndpoint) {
+    if (oidcServerConfiguration.revocationEndpoint && url === normalizeUrl(oidcServerConfiguration.revocationEndpoint)) {
       continue;
     }
     const trustedDomain = trustedDomains2 == null ? [] : trustedDomains2[key];
@@ -252,6 +259,7 @@ function replaceCodeVerifier(codeVerifier, newCodeVerifier) {
   const regex = /code_verifier=[A-Za-z0-9_-]+/i;
   return codeVerifier.replace(regex, `code_verifier=${newCodeVerifier}`);
 }
+const version = "7.12.12";
 if (typeof trustedTypes !== "undefined" && typeof trustedTypes.createPolicy == "function") {
   trustedTypes.createPolicy("default", {
     createScriptURL: function(url) {
@@ -280,9 +288,11 @@ const database = {};
 const getCurrentDatabasesTokenEndpoint = (database2, url) => {
   const databases = [];
   for (const [, value] of Object.entries(database2)) {
-    if (value.oidcServerConfiguration != null && url.startsWith(value.oidcServerConfiguration.tokenEndpoint)) {
+    if (value.oidcServerConfiguration != null && url.startsWith(normalizeUrl(value.oidcServerConfiguration.tokenEndpoint))) {
       databases.push(value);
-    } else if (value.oidcServerConfiguration != null && value.oidcServerConfiguration.revocationEndpoint && url.startsWith(value.oidcServerConfiguration.revocationEndpoint)) {
+    } else if (value.oidcServerConfiguration != null && value.oidcServerConfiguration.revocationEndpoint && url.startsWith(
+      normalizeUrl(value.oidcServerConfiguration.revocationEndpoint)
+    )) {
       databases.push(value);
     }
   }
@@ -306,14 +316,14 @@ const keepAliveAsync = async (event) => {
 };
 const handleFetch = async (event) => {
   const originalRequest = event.request;
-  const url = originalRequest.url;
-  if (originalRequest.url.includes(keepAliveJsonFilename)) {
+  const url = normalizeUrl(originalRequest.url);
+  if (url.includes(keepAliveJsonFilename)) {
     event.respondWith(keepAliveAsync(event));
     return;
   }
   const currentDatabaseForRequestAccessToken = getCurrentDatabaseDomain(
     database,
-    originalRequest.url,
+    url,
     trustedDomains
   );
   if (currentDatabaseForRequestAccessToken && currentDatabaseForRequestAccessToken.tokens && currentDatabaseForRequestAccessToken.tokens.access_token) {
@@ -354,10 +364,7 @@ const handleFetch = async (event) => {
     return;
   }
   let currentDatabase = null;
-  const currentDatabases = getCurrentDatabasesTokenEndpoint(
-    database,
-    originalRequest.url
-  );
+  const currentDatabases = getCurrentDatabasesTokenEndpoint(database, url);
   const numberDatabase = currentDatabases.length;
   if (numberDatabase > 0) {
     const maPromesse = new Promise((resolve, reject) => {
@@ -402,7 +409,9 @@ const handleFetch = async (event) => {
             integrity: clonedRequest.integrity
           });
           if (currentDatabase && currentDatabase.oidcServerConfiguration != null && currentDatabase.oidcServerConfiguration.revocationEndpoint && url.startsWith(
-            currentDatabase.oidcServerConfiguration.revocationEndpoint
+            normalizeUrl(
+              currentDatabase.oidcServerConfiguration.revocationEndpoint
+            )
           )) {
             return fetchPromise.then(async (response2) => {
               const text = await response2.text();
@@ -415,7 +424,10 @@ const handleFetch = async (event) => {
           currentLoginCallbackConfigurationName = null;
           let newBody = actualBody;
           if (currentDatabase && currentDatabase.codeVerifier != null) {
-            newBody = replaceCodeVerifier(newBody, currentDatabase.codeVerifier);
+            newBody = replaceCodeVerifier(
+              newBody,
+              currentDatabase.codeVerifier
+            );
           }
           return fetch(originalRequest, {
             body: newBody,
@@ -457,6 +469,10 @@ const handleFetch = async (event) => {
 const handleMessage = (event) => {
   const port = event.ports[0];
   const data = event.data;
+  if (event.data.type === "claim") {
+    _self.clients.claim().then(() => port.postMessage({}));
+    return;
+  }
   const configurationName = data.configurationName;
   let currentDatabase = database[configurationName];
   if (trustedDomains == null) {
@@ -499,7 +515,7 @@ const handleMessage = (event) => {
       const oidcServerConfiguration = data.data.oidcServerConfiguration;
       const trustedDomain = trustedDomains[configurationName];
       const domains = getDomains(trustedDomain, "oidc");
-      if (!domains.find((f) => f === acceptAnyDomainToken)) {
+      if (!domains.some((domain) => domain === acceptAnyDomainToken)) {
         [
           oidcServerConfiguration.tokenEndpoint,
           oidcServerConfiguration.revocationEndpoint,
@@ -546,35 +562,47 @@ const handleMessage = (event) => {
       }
       return;
     }
-    case "setDemonstratingProofOfPossessionNonce":
+    case "setDemonstratingProofOfPossessionNonce": {
       currentDatabase.demonstratingProofOfPossessionNonce = data.data.demonstratingProofOfPossessionNonce;
       port.postMessage({ configurationName });
       return;
-    case "getDemonstratingProofOfPossessionNonce":
+    }
+    case "getDemonstratingProofOfPossessionNonce": {
       const demonstratingProofOfPossessionNonce = currentDatabase.demonstratingProofOfPossessionNonce;
-      port.postMessage({ configurationName, demonstratingProofOfPossessionNonce });
+      port.postMessage({
+        configurationName,
+        demonstratingProofOfPossessionNonce
+      });
       return;
-    case "setDemonstratingProofOfPossessionJwk":
+    }
+    case "setDemonstratingProofOfPossessionJwk": {
       currentDatabase.demonstratingProofOfPossessionJwkJson = data.data.demonstratingProofOfPossessionJwkJson;
       port.postMessage({ configurationName });
       return;
-    case "getDemonstratingProofOfPossessionJwk":
+    }
+    case "getDemonstratingProofOfPossessionJwk": {
       const demonstratingProofOfPossessionJwkJson = currentDatabase.demonstratingProofOfPossessionJwkJson;
-      port.postMessage({ configurationName, demonstratingProofOfPossessionJwkJson });
+      port.postMessage({
+        configurationName,
+        demonstratingProofOfPossessionJwkJson
+      });
       return;
-    case "setState":
+    }
+    case "setState": {
       currentDatabase.state = data.data.state;
       port.postMessage({ configurationName });
       return;
+    }
     case "getState": {
       const state = currentDatabase.state;
       port.postMessage({ configurationName, state });
       return;
     }
-    case "setCodeVerifier":
+    case "setCodeVerifier": {
       currentDatabase.codeVerifier = data.data.codeVerifier;
       port.postMessage({ configurationName });
       return;
+    }
     case "getCodeVerifier": {
       port.postMessage({
         configurationName,
@@ -582,10 +610,11 @@ const handleMessage = (event) => {
       });
       return;
     }
-    case "setSessionState":
+    case "setSessionState": {
       currentDatabase.sessionState = data.data.sessionState;
       port.postMessage({ configurationName });
       return;
+    }
     case "getSessionState": {
       const sessionState = currentDatabase.sessionState;
       port.postMessage({ configurationName, sessionState });
@@ -605,9 +634,10 @@ const handleMessage = (event) => {
       port.postMessage({ configurationName, nonce });
       return;
     }
-    default:
+    default: {
       currentDatabase.items = { ...data.data };
       port.postMessage({ configurationName });
+    }
   }
 };
 _self.addEventListener("install", handleInstall);
