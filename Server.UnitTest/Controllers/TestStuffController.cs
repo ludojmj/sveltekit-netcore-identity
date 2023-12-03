@@ -10,6 +10,8 @@ namespace Server.UnitTest.Controllers;
 
 public class TestStuffController
 {
+    private readonly IStuffService _service;
+
     private static readonly UserModel CurrentUserModelTest = new()
     {
         Id = "11",
@@ -30,22 +32,25 @@ public class TestStuffController
 
     private static readonly StuffModel TestStuff = new()
     {
-        DatumList = new Collection<DatumModel>
-            {
-                TestDatum
-            }
+        DatumList = new Collection<DatumModel> { TestDatum }
     };
+
+
+    public TestStuffController()
+    {
+        _service = Mock.Of<IStuffService>();
+    }
 
     // ***** ***** ***** LIST
     [Fact]
     public async Task StuffController_GetStuffList_ShouldReturn_Ok()
     {
         // Arrange
-        var mockStuffService = Mock.Of<IStuffService>(x => x.GetListAsync(1) == Task.FromResult(TestStuff));
+        Mock.Get(_service).Setup(x => x.GetListAsync(1)).ReturnsAsync(TestStuff);
         var controller = new StuffController();
 
         // Act
-        IActionResult actionResult = await controller.GetList(1, null, mockStuffService);
+        IActionResult actionResult = await controller.GetList(1, null, _service);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(actionResult);
@@ -60,11 +65,11 @@ public class TestStuffController
     public async Task StuffController_SearchStuffList_ShouldReturn_Ok()
     {
         // Arrange
-        var mockStuffService = Mock.Of<IStuffService>(x => x.SearchListAsync("foo") == Task.FromResult(TestStuff));
+        Mock.Get(_service).Setup(x => x.SearchListAsync("foo")).ReturnsAsync(TestStuff);
         var controller = new StuffController();
 
         // Act
-        IActionResult actionResult = await controller.GetList(0, "foo", mockStuffService);
+        IActionResult actionResult = await controller.GetList(0, "foo", _service);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(actionResult);
@@ -79,11 +84,11 @@ public class TestStuffController
     public async Task StuffController_Create_ShouldReturnCreated()
     {
         // Arrange
-        var mockStuffService = Mock.Of<IStuffService>(x => x.CreateAsync(TestDatum) == Task.FromResult(TestDatum));
+        Mock.Get(_service).Setup(x => x.CreateAsync(TestDatum)).ReturnsAsync(TestDatum);
         var controller = new StuffController();
 
         // Act
-        IActionResult actionResult = await controller.Create(TestDatum, mockStuffService);
+        IActionResult actionResult = await controller.Create(TestDatum, _service);
 
         // Assert
         var okResult = Assert.IsType<CreatedAtActionResult>(actionResult);
@@ -96,11 +101,11 @@ public class TestStuffController
     public async Task StuffController_Read_ShouldReturn_Ok()
     {
         // Arrange
-        var mockStuffService = Mock.Of<IStuffService>(x => x.ReadAsync("1") == Task.FromResult(TestDatum));
+        Mock.Get(_service).Setup(x => x.ReadAsync("1")).ReturnsAsync(TestDatum);
         var controller = new StuffController();
 
         // Act
-        IActionResult actionResult = await controller.Read("1", mockStuffService);
+        IActionResult actionResult = await controller.Read("1", _service);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(actionResult);

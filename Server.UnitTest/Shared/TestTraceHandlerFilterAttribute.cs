@@ -16,7 +16,7 @@ namespace Server.UnitTest.Shared;
 
 public class TestTraceHandlerFilterAttribute
 {
-    private static ILogger<TraceHandlerFilterAttribute> _logger = null!;
+    private readonly ILogger<TraceHandlerFilterAttribute> _logger;
 
     public TestTraceHandlerFilterAttribute()
     {

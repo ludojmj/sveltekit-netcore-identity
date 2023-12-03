@@ -10,6 +10,10 @@ namespace Server.UnitTest.Services;
 
 public class TestUserService
 {
+    private readonly SqliteConnection _connection;
+    private readonly StuffDbContext _dbContext;
+    private readonly IUserService _userService;
+
     private static readonly UserModel TestUserModel = new()
     {
         Id = "11",
@@ -31,10 +35,6 @@ public class TestUserService
         UsrCreatedAt = DateTime.UtcNow.ToString("o"),
         UsrUpdatedAt = DateTime.UtcNow.ToString("o")
     };
-
-    private readonly SqliteConnection _connection;
-    private readonly StuffDbContext _dbContext;
-    private readonly IUserService _userService;
 
     public TestUserService()
     {
