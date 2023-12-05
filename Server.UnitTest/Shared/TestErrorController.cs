@@ -11,9 +11,9 @@ namespace Server.UnitTest.Shared;
 
 public class TestErrorController
 {
-    public readonly IHostEnvironment _env;
-    public readonly ILogger<ErrorController> _logger;
-    public readonly IExceptionHandlerFeature _exception;
+    private readonly IHostEnvironment _env;
+    private readonly ILogger<ErrorController> _logger;
+    private readonly IExceptionHandlerFeature _exception;
 
     public TestErrorController()
     {

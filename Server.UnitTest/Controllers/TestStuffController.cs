@@ -10,7 +10,7 @@ namespace Server.UnitTest.Controllers;
 
 public class TestStuffController
 {
-    private readonly IStuffService _service;
+    private readonly IStuffService _service = Mock.Of<IStuffService>();
 
     private static readonly UserModel CurrentUserModelTest = new()
     {
@@ -34,12 +34,6 @@ public class TestStuffController
     {
         DatumList = new Collection<DatumModel> { TestDatum }
     };
-
-
-    public TestStuffController()
-    {
-        _service = Mock.Of<IStuffService>();
-    }
 
     // ***** ***** ***** LIST
     [Fact]
