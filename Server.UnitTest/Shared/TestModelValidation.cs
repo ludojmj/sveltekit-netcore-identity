@@ -7,16 +7,19 @@ using Microsoft.AspNetCore.Routing;
 using Moq;
 using Xunit;
 using Server.Shared;
+using Microsoft.Extensions.Logging;
 
 namespace Server.UnitTest.Shared;
 
 public class TestModelValidation
 {
+    private readonly ILogger<ModelValidationFilterAttribute> _logger = Mock.Of<ILogger<ModelValidationFilterAttribute>>();
+
     [Fact]
     public void ModelValidationFilterAttribute_ShouldThrowArgumentException_IfModelIsInvalid()
     {
         // Arrange
-        var validationFilter = new ModelValidationFilterAttribute();
+        var validationFilter = new ModelValidationFilterAttribute(_logger);
         var modelState = new ModelStateDictionary();
         modelState.AddModelError("year", "invalid");
 
@@ -34,10 +37,15 @@ public class TestModelValidation
         );
 
         // Act
-        var exception = Record.Exception(() => validationFilter.OnActionExecuting(actionExecutingContext));
+        validationFilter.OnActionExecuting(actionExecutingContext);
 
         // Assert
-        Assert.IsType<ArgumentException>(exception);
-        Assert.Equal("invalid", exception.Message);
+        Mock.Get(_logger).Verify(x => x.Log(
+            It.Is<LogLevel>(l => l == LogLevel.Error),
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, _) => v.ToString() == "Model state is invalid: invalid"),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+            Times.Once);
     }
 }

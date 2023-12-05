@@ -1,4 +1,4 @@
-using System.Text.Json;
+using Server.Shared;
 
 namespace Server.Models;
 
@@ -11,11 +11,12 @@ public class UserModel
     public string GivenName { get; set; }
     public string FamilyName { get; set; }
     public string Email { get; set; }
+    public string Ip { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
     public override string ToString()
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+        return this.IndentSerialize();
     }
 }

@@ -7,7 +7,7 @@ git clone https://github.com/ludojmj/sveltekit-netcore-identity.git
 The aim of this project is to gather, in a single place, useful front and back ends development tools:
 
 - A Database with SQLite;
-- A Web API server with .NET Core 6.x;
+- A Web API server with .NET Core 8.x;
 - A Svelte/SvelteKit client App;
 - A link to an external service for identity management, authorization, and API security.
 

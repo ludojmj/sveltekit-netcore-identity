@@ -10,7 +10,7 @@ namespace Server.UnitTest.Controllers;
 
 public class TestUserController
 {
-    private readonly IUserService _service;
+    private readonly IUserService _service = Mock.Of<IUserService>();
 
     private static readonly UserModel TestUser = new()
     {
@@ -25,12 +25,6 @@ public class TestUserController
     {
         UserList = new Collection<UserModel> { TestUser }
     };
-
-    public TestUserController()
-    {
-        _service = Mock.Of<IUserService>();
-    }
-
 
     // ***** ***** ***** LIST
     [Fact]
@@ -114,7 +108,7 @@ public class TestUserController
         var controller = new UserController();
 
         // Act
-        IActionResult actionResult = await controller.Read("1", _service);
+        IActionResult actionResult = await controller.Read("1", mockUserService);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(actionResult);

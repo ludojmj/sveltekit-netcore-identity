@@ -7,6 +7,7 @@ using Server.DbModels;
 using Server.Models;
 using Server.Services;
 using Server.Services.Interfaces;
+using System.Net;
 using System.Security.Claims;
 using Xunit;
 
@@ -23,7 +24,8 @@ public class TestStuffService
         Name = "GivenName FamilyName",
         GivenName = "GivenName",
         FamilyName = "FamilyName",
-        Email = "Email"
+        Email = "Email",
+        Ip = "127.0.0.1"
     };
 
     private static readonly DatumModel DatumModelTest = new()
@@ -65,6 +67,7 @@ public class TestStuffService
         _dbContext.Database.EnsureCreated();
         var mockHttpCtx = Mock.Of<IHttpContextAccessor>(x =>
                 x.HttpContext!.User.FindFirst(It.IsAny<string>()) == new Claim("name", TestUserModel.Id)
+             && x.HttpContext.Connection.RemoteIpAddress == IPAddress.Parse("127.0.0.1")
              && x.HttpContext.Request.Path == "/path"
              && x.HttpContext.Request.RouteValues == new RouteValueDictionary("GetList"));
         _stuffService = new StuffService(_dbContext, mockHttpCtx);
