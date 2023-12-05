@@ -1,27 +1,19 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Server.Shared;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public sealed class ModelValidationFilterAttribute : ActionFilterAttribute
+public sealed class ModelValidationFilterAttribute(ILogger<ModelValidationFilterAttribute> logger) : ActionFilterAttribute
 {
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-        if (context == null)
-        {
-            base.OnActionExecuting(null!);
-            return;
-        }
-
         if (!context.ModelState.IsValid)
         {
             var err = context.ModelState.Values.SelectMany(value => value.Errors).FirstOrDefault();
-            if (err == null)
-            {
-                throw new ArgumentException("Model state is invalid.");
-            }
-
-            throw new ArgumentException(err.ErrorMessage);
+            logger.LogError($"Model state is invalid: {err?.ErrorMessage}");
+            context.Result = new StatusCodeResult(StatusCodes.Status400BadRequest);
+            return;
         }
 
         base.OnActionExecuting(context);

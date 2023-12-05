@@ -8,20 +8,15 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Server.Models;
 using Server.Shared;
+using System.Net;
 using System.Security.Claims;
-using System.Text.Json;
 using Xunit;
 
 namespace Server.UnitTest.Shared;
 
 public class TestTraceHandlerFilterAttribute
 {
-    private readonly ILogger<TraceHandlerFilterAttribute> _logger;
-
-    public TestTraceHandlerFilterAttribute()
-    {
-        _logger = Mock.Of<ILogger<TraceHandlerFilterAttribute>>();
-    }
+    private readonly ILogger<TraceHandlerFilterAttribute> _logger = Mock.Of<ILogger<TraceHandlerFilterAttribute>>();
 
     [Fact]
     public void Test_OnActionExecuting_Context_Null()
@@ -30,16 +25,11 @@ public class TestTraceHandlerFilterAttribute
         var filter = new TraceHandlerFilterAttribute(_logger);
 
         // Act
-        filter.OnActionExecuting(null);
+        var exception = Record.Exception(() => filter.OnActionExecuting(null!));
 
         // Assert
-        Mock.Get(_logger).Verify(x => x.Log(
-            It.IsAny<LogLevel>(),
-            It.IsAny<EventId>(),
-            It.IsAny<It.IsAnyType>(),
-            It.IsAny<Exception>(),
-            (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()),
-            Times.Never);
+        Assert.IsType<NullReferenceException>(exception);
+        Assert.Equal("Object reference not set to an instance of an object.", exception.Message);
     }
 
     [Fact]
@@ -49,75 +39,32 @@ public class TestTraceHandlerFilterAttribute
         var filter = new TraceHandlerFilterAttribute(_logger);
 
         // Act
-        filter.OnActionExecuted(null);
+        var exception = Record.Exception(() => filter.OnActionExecuted(null!));
 
         // Assert
-        Mock.Get(_logger).Verify(x => x.Log(
-            It.IsAny<LogLevel>(),
-            It.IsAny<EventId>(),
-            It.IsAny<It.IsAnyType>(),
-            It.IsAny<Exception>(),
-            (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()),
-            Times.Never);
+        Assert.IsType<NullReferenceException>(exception);
+        Assert.Equal("Object reference not set to an instance of an object.", exception.Message);
     }
 
     [Fact]
-    public void Test_OnActionExecuting_No_Log_If_Service()
+    public void Test_OnActionExecuting_Service_Log()
     {
         // Arrange
-        var context = new ActionContext(
-            Mock.Of<HttpContext>(x =>
-            x.User.FindFirst(It.IsAny<string>()) == new Claim("name", "UserAPI")
-         && x.Request.Path == "/path"
-         && x.Request.RouteValues == new RouteValueDictionary("GetList")),
-            Mock.Of<RouteData>(),
-            Mock.Of<ActionDescriptor>(),
-            Mock.Of<ModelStateDictionary>()
-        );
-        var executingContext = new ActionExecutingContext(
-            context,
-            new List<IFilterMetadata>(),
-            new Dictionary<string, object?>(),
-            Mock.Of<Controller>()
-        )
-        {
-            ActionArguments =
-                {
-                    ["service"] = "123"
-                }
-        };
-
-        var filter = new TraceHandlerFilterAttribute(_logger);
-
-        // Act
-        filter.OnActionExecuting(executingContext);
-
-        // Assert
-        Mock.Get(_logger).Verify(x => x.Log(
-            It.IsAny<LogLevel>(),
-            It.IsAny<EventId>(),
-            It.IsAny<It.IsAnyType>(),
-            It.IsAny<Exception>(),
-            (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()),
-            Times.Never);
-    }
-
-    [Fact]
-    public void Test_OnActionExecuting_Operation_AuthToken()
-    {
-        // Arrange
+        string expectedOp = " Request: {" + Environment.NewLine + "  \"service\": \"123\"" + Environment.NewLine + "}";
         UserModel expectedUser = new()
         {
             AppId = "UserAPI",
             Email = "UserAPI",
             Id = "UserAPI",
             Name = "UserAPI",
-            Operation = "7: /path"
+            Operation = "7: /path",
+            Ip = "127.0.0.1"
         };
-        var userLog = JsonSerializer.Serialize(expectedUser, new JsonSerializerOptions { WriteIndented = true });
+        var userLog = expectedUser.IndentSerialize();
         var context = new ActionContext(
             Mock.Of<HttpContext>(x =>
             x.User.FindFirst(It.IsAny<string>()) == new Claim("name", "UserAPI")
+         && x.Connection.RemoteIpAddress == IPAddress.Parse("127.0.0.1")
          && x.Request.Path == "/path"
          && x.Request.RouteValues == new RouteValueDictionary("GetList")),
             Mock.Of<RouteData>(),
@@ -131,10 +78,7 @@ public class TestTraceHandlerFilterAttribute
             Mock.Of<Controller>()
         )
         {
-            ActionArguments =
-                {
-                    ["Id"] = "123"
-                }
+            ActionArguments = { ["service"] = "123" }
         };
 
         var filter = new TraceHandlerFilterAttribute(_logger);
@@ -146,9 +90,60 @@ public class TestTraceHandlerFilterAttribute
         Mock.Get(_logger).Verify(x => x.Log(
             It.Is<LogLevel>(l => l == LogLevel.Information),
             It.IsAny<EventId>(),
-            It.Is<It.IsAnyType>((v, _) => v.ToString() == userLog + " Request: Id=\"123\""),
+            It.Is<It.IsAnyType>((v, _) => v.ToString() == userLog + expectedOp),
             It.IsAny<Exception>(),
-            (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()));
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+            Times.Once);
+    }
+
+    [Fact]
+    public void Test_OnActionExecuting_Operation_AuthToken()
+    {
+        // Arrange
+        string expectedOp = " Request: {" + Environment.NewLine + "  \"Id\": \"123\"" + Environment.NewLine + "}";
+        UserModel expectedUser = new()
+        {
+            AppId = "UserAPI",
+            Email = "UserAPI",
+            Id = "UserAPI",
+            Name = "UserAPI",
+            Operation = "7: /path",
+            Ip = "127.0.0.1"
+        };
+        var userLog = expectedUser.IndentSerialize();
+        var context = new ActionContext(
+            Mock.Of<HttpContext>(x =>
+            x.User.FindFirst(It.IsAny<string>()) == new Claim("name", "UserAPI")
+         && x.Connection.RemoteIpAddress == IPAddress.Parse("127.0.0.1")
+         && x.Request.Path == "/path"
+         && x.Request.RouteValues == new RouteValueDictionary("GetList")),
+            Mock.Of<RouteData>(),
+            Mock.Of<ActionDescriptor>(),
+            Mock.Of<ModelStateDictionary>()
+        );
+        var executingContext = new ActionExecutingContext(
+            context,
+            new List<IFilterMetadata>(),
+            new Dictionary<string, object?>(),
+            Mock.Of<Controller>()
+        )
+        {
+            ActionArguments = { ["Id"] = "123" }
+        };
+
+        var filter = new TraceHandlerFilterAttribute(_logger);
+
+        // Act
+        filter.OnActionExecuting(executingContext);
+
+        // Assert
+        Mock.Get(_logger).Verify(x => x.Log(
+            It.Is<LogLevel>(l => l == LogLevel.Information),
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, _) => v.ToString() == userLog + expectedOp),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+            Times.Once);
     }
 
     [Fact]
@@ -161,12 +156,14 @@ public class TestTraceHandlerFilterAttribute
             Email = "UserAPI",
             Id = "UserAPI",
             Name = "UserAPI",
-            Operation = "7: /path"
+            Operation = "7: /path",
+            Ip = "127.0.0.1"
         };
-        var userLog = JsonSerializer.Serialize(expectedUser, new JsonSerializerOptions { WriteIndented = true });
+        var userLog = expectedUser.IndentSerialize();
         var context = new ActionContext(
             Mock.Of<HttpContext>(x =>
             x.User.FindFirst(It.IsAny<string>()) == new Claim("name", "UserAPI")
+         && x.Connection.RemoteIpAddress == IPAddress.Parse("127.0.0.1")
          && x.Request.Path == "/path"
          && x.Request.RouteValues == new RouteValueDictionary("GetList")),
             Mock.Of<RouteData>(),
@@ -193,21 +190,25 @@ public class TestTraceHandlerFilterAttribute
             It.IsAny<EventId>(),
             It.Is<It.IsAnyType>((v, _) => v.ToString() == userLog + " Response: \"fubar\""),
             It.IsAny<Exception>(),
-            (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()));
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+            Times.Once);
     }
 
     [Fact]
     public void Test_OnActionExecuting_Operation_Anonymous()
     {
         // Arrange
+        string expectedOp = " Request: {" + Environment.NewLine + "  \"Id\": \"123\"" + Environment.NewLine + "}";
         UserModel expectedUser = new()
         {
-            Operation = "7: /path"
+            Operation = "7: /path",
+            Ip = "127.0.0.1"
         };
-        var userLog = JsonSerializer.Serialize(expectedUser, new JsonSerializerOptions { WriteIndented = true });
+        var userLog = expectedUser.IndentSerialize();
         var context = new ActionContext(
             Mock.Of<HttpContext>(x =>
             x.User.FindFirst(It.IsAny<string>()) == null
+         && x.Connection.RemoteIpAddress == IPAddress.Parse("127.0.0.1")
          && x.Request.Path == "/path"
          && x.Request.RouteValues == new RouteValueDictionary("GetList")),
             Mock.Of<RouteData>(),
@@ -221,10 +222,7 @@ public class TestTraceHandlerFilterAttribute
             Mock.Of<Controller>()
         )
         {
-            ActionArguments =
-                {
-                    ["Id"] = "123"
-                }
+            ActionArguments = { ["Id"] = "123" }
         };
 
         var filter = new TraceHandlerFilterAttribute(_logger);
@@ -236,9 +234,10 @@ public class TestTraceHandlerFilterAttribute
         Mock.Get(_logger).Verify(x => x.Log(
             It.Is<LogLevel>(l => l == LogLevel.Information),
             It.IsAny<EventId>(),
-            It.Is<It.IsAnyType>((v, _) => v.ToString() == userLog + " Request: Id=\"123\""),
+            It.Is<It.IsAnyType>((v, _) => v.ToString() == userLog + expectedOp),
             It.IsAny<Exception>(),
-            (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()));
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+            Times.Once);
     }
 
     [Fact]
@@ -247,12 +246,14 @@ public class TestTraceHandlerFilterAttribute
         // Arrange
         UserModel expectedUser = new()
         {
-            Operation = "7: /path"
+            Operation = "7: /path",
+            Ip = "127.0.0.1"
         };
-        var userLog = JsonSerializer.Serialize(expectedUser, new JsonSerializerOptions { WriteIndented = true });
+        var userLog = expectedUser.IndentSerialize();
         var context = new ActionContext(
             Mock.Of<HttpContext>(x =>
             x.User.FindFirst(It.IsAny<string>()) == null
+         && x.Connection.RemoteIpAddress == IPAddress.Parse("127.0.0.1")
          && x.Request.Path == "/path"
          && x.Request.RouteValues == new RouteValueDictionary("GetList")),
             Mock.Of<RouteData>(),
@@ -279,7 +280,8 @@ public class TestTraceHandlerFilterAttribute
             It.IsAny<EventId>(),
             It.Is<It.IsAnyType>((v, _) => v.ToString() == userLog + " Response: \"fubar\""),
             It.IsAny<Exception>(),
-            (Func<It.IsAnyType, Exception?, string>)It.IsAny<object>()));
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+            Times.Once);
     }
 
     [Fact]
