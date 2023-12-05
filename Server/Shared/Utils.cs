@@ -18,7 +18,7 @@ public static class Utils
     public static void RequestLogger(this ActionExecutingContext context, ILogger logger, string userInfo)
     {
         string flux = context.ActionArguments.IndentSerialize();
-        logger.LogInformation($"{userInfo} Request: {flux}");
+        logger.LogInformation("{userInfo} Request: {flux}", userInfo, flux);
     }
 
     public static void ResponseLogger(this ActionExecutedContext context, ILogger logger, string userInfo)
@@ -27,7 +27,7 @@ public static class Utils
         {
             string fluxFull = elt.Value.IndentSerialize();
             string flux = fluxFull.Truncate();
-            logger.LogInformation($"{userInfo} Response: {flux}");
+            logger.LogInformation("{userInfo} Response: {flux}", userInfo, flux);
         }
     }
 

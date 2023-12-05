@@ -11,15 +11,46 @@ using Microsoft.Extensions.Logging;
 
 namespace Server.UnitTest.Shared;
 
-public class TestModelValidation
+public class TestModelValidationFilterAttribute
 {
     private readonly ILogger<ModelValidationFilterAttribute> _logger = Mock.Of<ILogger<ModelValidationFilterAttribute>>();
 
     [Fact]
-    public void ModelValidationFilterAttribute_ShouldThrowArgumentException_IfModelIsInvalid()
+    public void ModelValidationFilterAttribute_Should_Should_Pass()
     {
         // Arrange
-        var validationFilter = new ModelValidationFilterAttribute(_logger);
+        var filter = new ModelValidationFilterAttribute(_logger);
+        var actionContext = new ActionContext(
+            Mock.Of<HttpContext>(),
+            Mock.Of<RouteData>(),
+            Mock.Of<ActionDescriptor>(),
+            Mock.Of<ModelStateDictionary>()
+        );
+        var actionExecutingContext = new ActionExecutingContext(
+            actionContext,
+            new List<IFilterMetadata>(),
+            new Dictionary<string, object?>(),
+            Mock.Of<Controller>()
+        );
+
+        // Act
+        filter.OnActionExecuting(actionExecutingContext);
+
+        // Assert
+        Mock.Get(_logger).Verify(x => x.Log(
+            It.IsAny<LogLevel>(),
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
+            Times.Never);
+    }
+
+    [Fact]
+    public void ModelValidationFilterAttribute_Should_Log_InvalidModel()
+    {
+        // Arrange
+        var filter = new ModelValidationFilterAttribute(_logger);
         var modelState = new ModelStateDictionary();
         modelState.AddModelError("year", "invalid");
 
@@ -37,7 +68,7 @@ public class TestModelValidation
         );
 
         // Act
-        validationFilter.OnActionExecuting(actionExecutingContext);
+        filter.OnActionExecuting(actionExecutingContext);
 
         // Assert
         Mock.Get(_logger).Verify(x => x.Log(

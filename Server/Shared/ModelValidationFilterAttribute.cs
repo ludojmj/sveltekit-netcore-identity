@@ -11,7 +11,7 @@ public sealed class ModelValidationFilterAttribute(ILogger<ModelValidationFilter
         if (!context.ModelState.IsValid)
         {
             var err = context.ModelState.Values.SelectMany(value => value.Errors).FirstOrDefault();
-            logger.LogError($"Model state is invalid: {err?.ErrorMessage}");
+            logger.LogError("Model state is invalid: {err?.ErrorMessage}", err?.ErrorMessage);
             context.Result = new StatusCodeResult(StatusCodes.Status400BadRequest);
             return;
         }

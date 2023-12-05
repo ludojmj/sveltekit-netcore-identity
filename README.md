@@ -53,7 +53,7 @@ cd <myfolder>
 sqlite3 Server/App_Data/stuff.db < Server/App_Data/create_tables.sql
 ```
 
-### >>>>> .NET Core 6.x Web API server
+### >>>>> .NET Core 8.x Web API server
 
 #### Create the server project
 

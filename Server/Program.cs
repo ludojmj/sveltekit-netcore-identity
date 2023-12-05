@@ -162,7 +162,7 @@ if (hasHttpLogs)
     app.Use(async (context, next) =>
     {
         var userInfo = context.GetCurrentUser();
-        app.Logger.LogInformation(userInfo.ToString());
+        app.Logger.LogInformation("{userInfo}", userInfo);
         await next();
     });
 }
