@@ -5,21 +5,18 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Moq;
-using Xunit;
 using Server.Shared;
-using Microsoft.Extensions.Logging;
+using Xunit;
 
 namespace Server.UnitTest.Shared;
 
 public class TestModelValidationFilterAttribute
 {
-    private readonly ILogger<ModelValidationFilterAttribute> _logger = Mock.Of<ILogger<ModelValidationFilterAttribute>>();
-
     [Fact]
     public void ModelValidationFilterAttribute_Should_Should_Pass()
     {
         // Arrange
-        var filter = new ModelValidationFilterAttribute(_logger);
+        var filter = new ModelValidationFilterAttribute();
         var actionContext = new ActionContext(
             Mock.Of<HttpContext>(),
             Mock.Of<RouteData>(),
@@ -35,22 +32,17 @@ public class TestModelValidationFilterAttribute
 
         // Act
         filter.OnActionExecuting(actionExecutingContext);
+        var exception = Record.Exception(() => filter.OnActionExecuting(actionExecutingContext));
 
         // Assert
-        Mock.Get(_logger).Verify(x => x.Log(
-            It.IsAny<LogLevel>(),
-            It.IsAny<EventId>(),
-            It.IsAny<It.IsAnyType>(),
-            It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
-            Times.Never);
+        Assert.Null(exception);
     }
 
     [Fact]
-    public void ModelValidationFilterAttribute_Should_Log_InvalidModel()
+    public void ModelValidationFilterAttribute_Should_Throw_ArgumentException()
     {
         // Arrange
-        var filter = new ModelValidationFilterAttribute(_logger);
+        var filter = new ModelValidationFilterAttribute();
         var modelState = new ModelStateDictionary();
         modelState.AddModelError("year", "invalid");
 
@@ -68,15 +60,9 @@ public class TestModelValidationFilterAttribute
         );
 
         // Act
-        filter.OnActionExecuting(actionExecutingContext);
+        var ex = Assert.Throws<ArgumentException>(() => filter.OnActionExecuting(actionExecutingContext));
 
         // Assert
-        Mock.Get(_logger).Verify(x => x.Log(
-            It.Is<LogLevel>(l => l == LogLevel.Error),
-            It.IsAny<EventId>(),
-            It.Is<It.IsAnyType>((v, _) => v.ToString() == "Model state is invalid: invalid"),
-            It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
-            Times.Once);
+        Assert.Equal("Model state is invalid: invalid", ex.Message);
     }
 }
