@@ -7,7 +7,7 @@
 <svelte:head>
   <title>sveltekit-netcore-identity</title>
   <meta name="description" content="sveltekit-netcore-identity" />
-  <meta name="keywords" content="SvelteKit .Net6 Identity" />
+  <meta name="keywords" content="SvelteKit .Net8 Identity" />
 </svelte:head>
 
 <AuthWrapper>

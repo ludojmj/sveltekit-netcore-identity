@@ -33,4 +33,4 @@ printf "\n************************** $step/$STEPS : Finalizing...\n"
 cd ..
 printf "\nDone.\n\n"
 # cd Server
-# dotnet bin/Release/net6.0/Server.dll
+# dotnet bin/Release/net8.0/Server.dll
