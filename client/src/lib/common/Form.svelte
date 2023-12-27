@@ -31,10 +31,10 @@
   };
 </script>
 
-{#if $isLoading}
-  <Loading />
-{:else if stuffDatum && stuffDatum.error}
+{#if stuffDatum?.error}
   <Error msgErr={stuffDatum.error} hasReset={true} />
+{:else if $isLoading || !stuffDatum}
+  <Loading />
 {:else}
   <form class="alert alert-secondary" on:submit|preventDefault={handleSubmitAsync}>
     <header

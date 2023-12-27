@@ -41,10 +41,10 @@
   };
 </script>
 
-{#if $isLoading}
-  <Loading />
-{:else if stuff.error}
+{#if stuff.error}
   <Error msgErr={stuff.error} hasReset={false} />
+{:else if $isLoading || !stuff.itemList}
+  <Loading />
 {:else}
   <form on:submit|preventDefault={handleSearch}>
     <div class="row">
