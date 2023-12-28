@@ -154,7 +154,6 @@ else
     );
 }
 
-app.UseAuthentication();
 app.UseAuthorization();
 if (hasHttpLogs)
 {
@@ -166,6 +165,7 @@ if (hasHttpLogs)
         await next();
     });
 }
+
 app.MapControllers().RequireAuthorization();
 app.MapFallbackToFile("/index.html");
 app.MapHealthChecks("/health");

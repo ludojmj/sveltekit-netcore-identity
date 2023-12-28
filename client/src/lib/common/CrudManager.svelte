@@ -43,7 +43,7 @@
 
 {#if stuff.error}
   <Error msgErr={stuff.error} hasReset={false} />
-{:else if $isLoading || !stuff.itemList}
+{:else if $isLoading || !stuff.datumList}
   <Loading />
 {:else}
   <form on:submit|preventDefault={handleSearch}>
