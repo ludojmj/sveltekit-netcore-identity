@@ -5,7 +5,8 @@ STEPS=6
 clear
 let "step++"
 printf "\n************************** $step/$STEPS : Init database...\n"
-sqlite3 Server/App_Data/order.db < Server/App_Data/create_tables.sql
+rm -fv Server/App_Data/stuff.db
+sqlite3 Server/App_Data/stuff.db < Server/App_Data/create_tables.sql
 
 let "step++"
 printf "\n************************** $step/$STEPS : Building client...\n"
