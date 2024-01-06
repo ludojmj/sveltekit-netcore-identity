@@ -54,7 +54,7 @@ public class UserService(StuffDbContext dbContext) : IUserService
 
     public async Task<UserModel> CreateAsync(UserModel input)
     {
-        input.CheckUser();
+        input.CheckUser(input.Id);
         TUser dbUser = input.ToCreate();
         await dbContext.TUsers.AddAsync(dbUser);
         await dbContext.SaveChangesAsync();
@@ -71,19 +71,9 @@ public class UserService(StuffDbContext dbContext) : IUserService
 
     public async Task<UserModel> UpdateAsync(string userId, UserModel input)
     {
-        input.CheckUser();
-
-        if (userId != input.Id)
-        {
-            throw new ArgumentException("Corrupted data.");
-        }
-
-        TUser dbUser = await dbContext.TUsers.FirstOrDefaultAsync(x => x.UsrId == userId);
-        if (dbUser == null)
-        {
-            throw new ArgumentException("Corrupted data.");
-        }
-
+        input.CheckUser(userId);
+        TUser dbUser = await dbContext.TUsers.FirstOrDefaultAsync(x => x.UsrId == userId)
+            ?? throw new ArgumentException("Corrupted data.");
         dbUser = input.ToUpdate(dbUser);
         await dbContext.SaveChangesAsync();
         var result = dbUser.ToUserModel();

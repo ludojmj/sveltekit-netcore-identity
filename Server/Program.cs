@@ -1,39 +1,38 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Server.Controllers;
 using Server.DbModels;
 using Server.Services;
 using Server.Services.Interfaces;
 using Server.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
-ConfigurationManager conf = builder.Configuration;
-IHostEnvironment env = builder.Environment;
-bool hasHttpLogs = conf.GetSection("HttpLogging").Get<bool>();
+var conf = builder.Configuration;
+var env = builder.Environment;
 
 // Add services to the container.
+builder.Services.AddExceptionHandler<ErrorHandler>();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddCors();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConfiguration(conf.GetSection("Logging")));
 builder.Services.AddApplicationInsightsTelemetry();
-if (hasHttpLogs)
+builder.Services.AddHttpLogging(logging =>
 {
-    builder.Services.AddHttpLogging(logging =>
-    {
-        logging.LoggingFields =
-            HttpLoggingFields.RequestPath |
-            HttpLoggingFields.RequestQuery |
-            HttpLoggingFields.RequestBody |
-            HttpLoggingFields.ResponseStatusCode |
-            HttpLoggingFields.ResponseBody;
-        logging.RequestBodyLogLimit = 4096;
-        logging.ResponseBodyLogLimit = 4096;
-    });
-}
+    logging.LoggingFields =
+        HttpLoggingFields.RequestPath |
+        HttpLoggingFields.RequestQuery |
+        HttpLoggingFields.RequestBody |
+        HttpLoggingFields.ResponseStatusCode |
+        HttpLoggingFields.ResponseBody;
+    logging.RequestBodyLogLimit = 4096;
+    logging.ResponseBodyLogLimit = 4096;
+    logging.CombineLogs = true;
+});
 
 // Add DB
 builder.Services.AddDbContext<StuffDbContext>(options => options.UseSqlite(
@@ -49,20 +48,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.Audience = conf["JwtToken:Audience"];
     });
 
-builder.Services.AddMvc(options =>
-{
-    if (!hasHttpLogs)
-    {
-        options.Filters.Add(typeof(TraceHandlerFilterAttribute));
-    }
-    options.Filters.Add(typeof(ModelValidationFilterAttribute));
-});
-
-builder.Services.Configure<ApiBehaviorOptions>(options =>
-{   // Managed by Shared/ModelValidationFilterAttribute.cs
-    options.SuppressModelStateInvalidFilter = true;
-});
-
 builder.Services.AddHsts(configureOptions =>
 {
     configureOptions.Preload = true;
@@ -73,7 +58,7 @@ builder.Services.AddHsts(configureOptions =>
 builder.Services.AddHttpsRedirection(options =>
 {
     options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
-    options.HttpsPort = conf.GetSection("https_port").Get<int>();
+    options.HttpsPort = 443;
 });
 
 // Register the Swagger generator
@@ -113,7 +98,7 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseHttpHeaders();
-app.UseExceptionHandler("/api/Error");
+app.UseExceptionHandler(_ => { });
 app.UseHsts();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -155,18 +140,17 @@ else
 }
 
 app.UseAuthorization();
-if (hasHttpLogs)
+app.UseHttpLogging();
+app.Use(async (context, next) =>
 {
-    app.UseHttpLogging();
-    app.Use(async (context, next) =>
-    {
-        var userInfo = context.GetCurrentUser();
-        app.Logger.LogInformation("{userInfo}", userInfo);
-        await next();
-    });
-}
+    var userInfo = context.GetCurrentUser();
+    app.Logger.LogInformation("{userInfo}", userInfo);
+    await next();
+});
 
-app.MapControllers().RequireAuthorization();
+
+app.MapGroup("api/stuff").MapStuff();
+app.MapGroup("api/user").MapUser();
 app.MapFallbackToFile("/index.html");
 app.MapHealthChecks("/health");
 

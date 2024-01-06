@@ -2,8 +2,8 @@
 import { goto } from '$app/navigation';
 import { get } from 'svelte/store';
 import axios from 'axios';
-import { apiErrMsg, crud } from './const.js';
-import { isLoading, tokens } from './store.js';
+import { isLoading, tokens } from '$lib/store.js';
+import { apiErrMsg, crud } from '$lib/const.js';
 
 const rootApi = import.meta.env.VITE_API_URL;
 const isMock = rootApi.indexOf('mock') > -1;
@@ -23,7 +23,7 @@ export const apiSearchStuffAsync = async (search) => {
   const mock = isMock ? '.json' : '';
   const getMsg = {
     method: 'get',
-    headers: { Authorization: 'Bearer ' + get(tokens).accessToken },
+    headers: { Authorization: `Bearer ${get(tokens).accessToken}` },
     url: `${rootApi}${mock}?search=${search}`
   };
   return axiosCallAsync(getMsg);
@@ -33,7 +33,7 @@ export const apiGetStuffListAsync = async () => {
   const mock = isMock ? '.json' : '';
   const getMsg = {
     method: 'get',
-    headers: { Authorization: 'Bearer ' + get(tokens).accessToken },
+    headers: { Authorization: `Bearer ${get(tokens).accessToken}` },
     url: rootApi + mock
   };
   return axiosCallAsync(getMsg);
@@ -43,7 +43,7 @@ export const apiGotoPageAsync = async (page) => {
   const mock = isMock ? `${page}.json` : '';
   const getMsg = {
     method: 'get',
-    headers: { Authorization: 'Bearer ' + get(tokens).accessToken },
+    headers: { Authorization: `Bearer ${get(tokens).accessToken}` },
     url: `${rootApi}${mock}?page=${page}`
   };
   return axiosCallAsync(getMsg);
@@ -53,7 +53,7 @@ export const apiGetStuffByIdAsync = async (id) => {
   const mock = isMock ? '.json' : '';
   const getMsg = {
     method: 'get',
-    headers: { Authorization: 'Bearer ' + get(tokens).accessToken },
+    headers: { Authorization: `Bearer ${get(tokens).accessToken}` },
     url: `${rootApi}/${id}${mock}`
   };
   return axiosCallAsync(getMsg);
@@ -63,7 +63,7 @@ export const apiCreateStuffAsync = async (input) => {
   const mock = isMock ? '.json' : '';
   const postMsg = {
     method: isMock ? 'get' : 'post',
-    headers: { Authorization: 'Bearer ' + get(tokens).accessToken },
+    headers: { Authorization: `Bearer ${get(tokens).accessToken}` },
     url: rootApi + mock,
     data: input
   };
@@ -74,7 +74,7 @@ export const apiUpdateStuffAsync = async (id, input) => {
   const mock = isMock ? '.json' : '';
   const putMsg = {
     method: isMock ? 'get' : 'put',
-    headers: { Authorization: 'Bearer ' + get(tokens).accessToken },
+    headers: { Authorization: `Bearer ${get(tokens).accessToken}` },
     url: `${rootApi}/${id}${mock}`,
     data: input
   };
@@ -85,7 +85,7 @@ export const apiDeleteStuffAsync = async (id) => {
   const mock = isMock ? '.json' : '';
   const deleteMsg = {
     method: isMock ? 'get' : 'delete',
-    headers: { Authorization: 'Bearer ' + get(tokens).accessToken },
+    headers: { Authorization: `Bearer ${get(tokens).accessToken}` },
     url: `${rootApi}/${id}${mock}`
   };
   return axiosCallAsync(deleteMsg);
@@ -93,10 +93,10 @@ export const apiDeleteStuffAsync = async (id) => {
 
 const getErrorMsg = (error) => {
   const msg = apiErrMsg.generic;
-  if (error.response && error.response.status === 401) {
+  if (error.response?.status === 401) {
     return apiErrMsg.unauthorized;
   }
-  if (error.response && error.response.data && error.response.data.error) {
+  if (error.response?.data?.detail) {
     return error.response.data.error;
   }
   if (error.message) {

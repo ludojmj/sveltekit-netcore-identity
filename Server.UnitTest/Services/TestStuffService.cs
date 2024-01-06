@@ -1,13 +1,10 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using Server.DbModels;
 using Server.Models;
 using Server.Services;
 using Server.Services.Interfaces;
-using System.Net;
 using System.Security.Claims;
 using Xunit;
 
@@ -17,6 +14,8 @@ public class TestStuffService
 {
     private readonly StuffDbContext _dbContext;
     private readonly IStuffService _stuffService;
+
+    private static readonly Guid IdTest = Guid.NewGuid();
 
     private static readonly UserModel TestUserModel = new()
     {
@@ -30,7 +29,7 @@ public class TestStuffService
 
     private static readonly DatumModel DatumModelTest = new()
     {
-        Id = "1",
+        Id = IdTest,
         Label = "Label",
         Description = "Description",
         OtherInfo = "OtherInfo",
@@ -48,7 +47,7 @@ public class TestStuffService
 
     private readonly TStuff _dbStuff = new()
     {
-        StfId = "1",
+        StfId = IdTest.ToString(),
         StfUserId = "11",
         StfLabel = "Label",
         StfDescription = "Description",
@@ -65,12 +64,14 @@ public class TestStuffService
             .Options;
         _dbContext = new StuffDbContext(options);
         _dbContext.Database.EnsureCreated();
-        var mockHttpCtx = Mock.Of<IHttpContextAccessor>(x =>
-                x.HttpContext!.User.FindFirst(It.IsAny<string>()) == new Claim("name", TestUserModel.Id)
-             && x.HttpContext.Connection.RemoteIpAddress == IPAddress.Parse("127.0.0.1")
-             && x.HttpContext.Request.Path == "/path"
-             && x.HttpContext.Request.RouteValues == new RouteValueDictionary("GetList"));
-        _stuffService = new StuffService(_dbContext, mockHttpCtx);
+        var httpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+                new(ClaimTypes.NameIdentifier, TestUserModel.Id)
+            }))
+        };
+        _stuffService = new StuffService(_dbContext, httpContext);
     }
 
     // ***** ***** ***** LIST
@@ -168,9 +169,10 @@ public class TestStuffService
         var serviceResult = await _stuffService.CreateAsync(DatumModelTest);
 
         // Assert
-        int actual = serviceResult.Id.Count(x => x == '-');
-        int expected = 4;
+        var expected = DatumModelTest.Label;
+        var actual = serviceResult.Label;
         Assert.Equal(expected, actual);
+        Assert.NotEqual(DatumModelTest.Id, serviceResult.Id);
     }
 
     [Fact]
@@ -220,7 +222,7 @@ public class TestStuffService
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var serviceResult = await _stuffService.ReadAsync("1");
+        var serviceResult = await _stuffService.ReadAsync(DatumModelTest.Id);
 
         // Assert
         var expected = DatumModelTest.Id;
@@ -235,7 +237,7 @@ public class TestStuffService
         // No stuff
 
         // Act
-        var serviceResult = _stuffService.ReadAsync("2");
+        var serviceResult = _stuffService.ReadAsync(Guid.NewGuid());
         var exception = await Record.ExceptionAsync(() => serviceResult);
 
         // Assert
@@ -254,7 +256,7 @@ public class TestStuffService
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var serviceResult = await _stuffService.UpdateAsync("1", DatumModelTest);
+        var serviceResult = await _stuffService.UpdateAsync(DatumModelTest.Id, DatumModelTest);
 
         // Assert
         var expected = DatumModelTest.Id;
@@ -269,7 +271,7 @@ public class TestStuffService
         // _datumModelTest.Id != input.Id
 
         // Act1
-        var serviceResult = _stuffService.UpdateAsync("2", DatumModelTest);
+        var serviceResult = _stuffService.UpdateAsync(Guid.NewGuid(), DatumModelTest);
         var exception = await Record.ExceptionAsync(() => serviceResult);
 
         // Assert1
@@ -279,10 +281,10 @@ public class TestStuffService
 
         // ***
         // Arrange2
-        DatumModelTest.Id = "StuffNotFound";
+        DatumModelTest.Id = Guid.NewGuid();
 
         // Act2
-        serviceResult = _stuffService.UpdateAsync("StuffNotFound", DatumModelTest);
+        serviceResult = _stuffService.UpdateAsync(Guid.NewGuid(), DatumModelTest);
         exception = await Record.ExceptionAsync(() => serviceResult);
 
         // Assert2
@@ -290,7 +292,7 @@ public class TestStuffService
         Assert.IsType<ArgumentException>(exception);
         Assert.Equal("Corrupted data.", exception.Message);
         // Restore
-        DatumModelTest.Id = "1";
+        DatumModelTest.Id = IdTest;
 
         // ***
         // Arrange3
@@ -317,7 +319,7 @@ public class TestStuffService
         _dbUser.UsrId = "11";
 
         // Act4
-        serviceResult = _stuffService.UpdateAsync("1", DatumModelTest);
+        serviceResult = _stuffService.UpdateAsync(new Guid(), DatumModelTest);
         exception = await Record.ExceptionAsync(() => serviceResult);
 
         // Assert4
@@ -340,7 +342,7 @@ public class TestStuffService
         await _dbContext.SaveChangesAsync();
 
         // Act
-        await _stuffService.DeleteAsync("1");
+        await _stuffService.DeleteAsync(IdTest);
         var actual = _dbContext.TStuffs.FirstOrDefault(x => x.StfId == "1");
 
         // Assert
@@ -354,7 +356,7 @@ public class TestStuffService
         // No stuff
 
         // Act1
-        var serviceResult = _stuffService.DeleteAsync("2");
+        var serviceResult = _stuffService.DeleteAsync(Guid.NewGuid());
         var exception = await Record.ExceptionAsync(() => serviceResult);
 
         // Assert1
@@ -372,7 +374,7 @@ public class TestStuffService
         _dbUser.UsrId = "11";
 
         // Act2
-        serviceResult = _stuffService.DeleteAsync("1");
+        serviceResult = _stuffService.DeleteAsync(IdTest);
         exception = await Record.ExceptionAsync(() => serviceResult);
 
         // Assert2
