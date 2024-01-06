@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Server.Controllers;
 using Server.DbModels;
-using Server.Models;
 using Server.Services;
 using Server.Services.Interfaces;
 using Server.Shared;

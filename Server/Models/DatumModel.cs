@@ -4,8 +4,8 @@ namespace Server.Models;
 public class DatumModel
 {
     private string _label = string.Empty;
-    private string description = string.Empty;
-    private string otherInfo = string.Empty;
+    private string _description = string.Empty;
+    private string _otherInfo = string.Empty;
 
     public Guid Id { get; set; }
     public string Label
@@ -15,13 +15,13 @@ public class DatumModel
     }
     public string Description
     {
-        get => description ?? string.Empty;
-        set => description = value.Trim();
+        get => _description ?? string.Empty;
+        set => _description = value.Trim();
     }
     public string OtherInfo
     {
-        get => otherInfo ?? string.Empty;
-        set => otherInfo = value.Trim();
+        get => _otherInfo ?? string.Empty;
+        set => _otherInfo = value.Trim();
     }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
