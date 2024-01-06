@@ -9,7 +9,7 @@ public static class StuffTranslator
     {
         var result = input == null ? null : new DatumModel
         {
-            Id = input.StfId,
+            Id = new Guid(input.StfId),
             Label = input.StfLabel,
             Description = input.StfDescription,
             OtherInfo = input.StfOtherInfo,
@@ -59,7 +59,7 @@ public static class StuffTranslator
 
     public static TStuff ToUpdate(this DatumModel input, TStuff result)
     {
-        result.StfId = input.Id;
+        result.StfId = input.Id.ToString();
         result.StfLabel = input.Label;
         result.StfDescription = input.Description;
         result.StfOtherInfo = input.OtherInfo;

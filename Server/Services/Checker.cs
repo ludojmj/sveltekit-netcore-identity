@@ -4,8 +4,13 @@ namespace Server.Services;
 
 public static class Checker
 {
-    public static void CheckUser(this UserModel input)
+    public static void CheckUser(this UserModel input, string id)
     {
+        if (id != input.Id)
+        {
+            throw new ArgumentException("Corrupted data.");
+        }
+
         if (string.IsNullOrWhiteSpace(input.Id))
         {
             throw new ArgumentException("The id cannot be empty.");
@@ -27,8 +32,13 @@ public static class Checker
         }
     }
 
-    public static void CheckDatum(this DatumModel input)
+    public static void CheckDatum(this DatumModel input, Guid id)
     {
+        if (id != input.Id)
+        {
+            throw new ArgumentException("Corrupted data.");
+        }
+
         if (string.IsNullOrWhiteSpace(input.Label))
         {
             throw new ArgumentException("The label cannot be empty.");

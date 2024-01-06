@@ -3,10 +3,26 @@ namespace Server.Models;
 
 public class DatumModel
 {
-    public string Id { get; set; }
-    public string Label { get; set; }
-    public string Description { get; set; }
-    public string OtherInfo { get; set; }
+    private string _label = string.Empty;
+    private string description = string.Empty;
+    private string otherInfo = string.Empty;
+
+    public Guid Id { get; set; }
+    public string Label
+    {
+        get => _label;
+        set => _label = value.Trim();
+    }
+    public string Description
+    {
+        get => description ?? string.Empty;
+        set => description = value.Trim();
+    }
+    public string OtherInfo
+    {
+        get => otherInfo ?? string.Empty;
+        set => otherInfo = value.Trim();
+    }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public UserModel User { get; set; }

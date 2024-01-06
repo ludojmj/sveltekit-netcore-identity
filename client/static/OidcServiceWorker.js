@@ -259,7 +259,7 @@ function replaceCodeVerifier(codeVerifier, newCodeVerifier) {
   const regex = /code_verifier=[A-Za-z0-9_-]+/i;
   return codeVerifier.replace(regex, `code_verifier=${newCodeVerifier}`);
 }
-const version = "7.12.12";
+const version = "7.13.14";
 if (typeof trustedTypes !== "undefined" && typeof trustedTypes.createPolicy == "function") {
   trustedTypes.createPolicy("default", {
     createScriptURL: function(url) {
