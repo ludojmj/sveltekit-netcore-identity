@@ -6,7 +6,7 @@ using Server.Shared;
 
 namespace Server.Services;
 
-public class StuffService(StuffDbContext dbContext, HttpContext httpContext) : IStuffService
+public class StuffService(StuffDbContext dbContext, IHttpContextAccessor httpContext) : IStuffService
 {
     private const int CstItemsPerPage = 6;
 
@@ -61,7 +61,7 @@ public class StuffService(StuffDbContext dbContext, HttpContext httpContext) : I
     {
         input.CheckDatum(input.Id);
         TStuff dbStuff = input.ToCreate();
-        UserModel userAuth = httpContext.GetCurrentUser();
+        UserModel userAuth = httpContext.HttpContext.GetCurrentUser();
         TUser dbUser = await dbContext.TUsers.FirstOrDefaultAsync(x => x.UsrId == userAuth.Id)
             ?? throw new KeyNotFoundException("User not found.");
 
@@ -95,7 +95,7 @@ public class StuffService(StuffDbContext dbContext, HttpContext httpContext) : I
     public async Task<DatumModel> UpdateAsync(Guid stuffId, DatumModel input)
     {
         input.CheckDatum(stuffId);
-        UserModel userAuth = httpContext.GetCurrentUser();
+        UserModel userAuth = httpContext.HttpContext.GetCurrentUser();
         TUser dbUser = await dbContext.TUsers.FirstOrDefaultAsync(x => x.UsrId == userAuth.Id);
         TStuff dbStuff = await dbContext.TStuffs.FirstOrDefaultAsync(x => x.StfId == stuffId.ToString());
         if (dbStuff == null || dbStuff.StfUserId != userAuth.Id)
@@ -114,7 +114,7 @@ public class StuffService(StuffDbContext dbContext, HttpContext httpContext) : I
 
     public async Task DeleteAsync(Guid stuffId)
     {
-        UserModel userAuth = httpContext.GetCurrentUser();
+        UserModel userAuth = httpContext.HttpContext.GetCurrentUser();
         TStuff dbStuff = await dbContext.TStuffs.FirstOrDefaultAsync(x => x.StfId == stuffId.ToString());
         if (dbStuff == null || dbStuff.StfUserId != userAuth.Id)
         {

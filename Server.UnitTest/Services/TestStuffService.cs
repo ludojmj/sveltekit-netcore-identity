@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Server.DbModels;
 using Server.Models;
 using Server.Services;
@@ -64,13 +65,14 @@ public class TestStuffService
             .Options;
         _dbContext = new StuffDbContext(options);
         _dbContext.Database.EnsureCreated();
-        var httpContext = new DefaultHttpContext
+        var context = new DefaultHttpContext
         {
             User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
             {
                 new(ClaimTypes.NameIdentifier, TestUserModel.Id)
             }))
         };
+        var httpContext = Mock.Of<IHttpContextAccessor>(x => x.HttpContext == context);
         _stuffService = new StuffService(_dbContext, httpContext);
     }
 
