@@ -13,6 +13,7 @@ var conf = builder.Configuration;
 var env = builder.Environment;
 
 // Add services to the container.
+builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ErrorHandler>();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
