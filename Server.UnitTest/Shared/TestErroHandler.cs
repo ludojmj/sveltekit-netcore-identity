@@ -10,21 +10,26 @@ namespace Server.UnitTest.Shared;
 public class TestErroHandler
 {
     private readonly IHostEnvironment _env;
+    private readonly IProblemDetailsService _problemDetailsService;
     private readonly HttpContext _httpContext;
 
     public TestErroHandler()
     {
         _env = Mock.Of<IHostEnvironment>();
+        _problemDetailsService = Mock.Of<IProblemDetailsService>();
         _httpContext = new DefaultHttpContext();
         _httpContext.Response.Body = new MemoryStream();
         _httpContext.Response.StatusCode = 200;
     }
 
-    [Fact]
-    public async Task ErrorHandler_NotFound()
+    [Theory]
+    [InlineData("Development")]
+    [InlineData("Production")]
+    public async Task ErrorHandler_NotFound(string env)
     {
         // Arrange
-        var errorHandler = new ErrorHandler(_env);
+        Mock.Get(_env).Setup(x => x.EnvironmentName).Returns(env);
+        var errorHandler = new ErrorHandler(_env, _problemDetailsService);
         var exception = new KeyNotFoundException("Not found");
 
         // Act
@@ -32,16 +37,19 @@ public class TestErroHandler
 
         // Assert
         Assert.Equal(404, _httpContext.Response.StatusCode);
-        Assert.True(result);
+        Assert.False(result);
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ErrorHandler_Business_Conflict(bool isBusiness)
+    [InlineData("Development", true)]
+    [InlineData("Development", false)]
+    [InlineData("Production", true)]
+    [InlineData("Production", false)]
+    public async Task ErrorHandler_Business_Conflict(string env, bool isBusiness)
     {
         // Arrange
-        var errorHandler = new ErrorHandler(_env);
+        Mock.Get(_env).Setup(x => x.EnvironmentName).Returns(env);
+        var errorHandler = new ErrorHandler(_env, _problemDetailsService);
         dynamic exception = isBusiness ? new BusinessException("Business error") : new DbUpdateException("DB Update error");
 
         // Act
@@ -49,7 +57,7 @@ public class TestErroHandler
 
         // Assert
         Assert.Equal(409, _httpContext.Response.StatusCode);
-        Assert.True(result);
+        Assert.False(result);
     }
 
     [Theory]
@@ -59,7 +67,7 @@ public class TestErroHandler
     {
         // Arrange
         Mock.Get(_env).Setup(x => x.EnvironmentName).Returns(env);
-        var errorHandler = new ErrorHandler(_env);
+        var errorHandler = new ErrorHandler(_env, _problemDetailsService);
         var exception = new DivideByZeroException("Unhandled exception");
 
         // Act
@@ -67,6 +75,6 @@ public class TestErroHandler
 
         // Assert
         Assert.Equal(400, _httpContext.Response.StatusCode);
-        Assert.True(result);
+        Assert.False(result);
     }
 }
