@@ -42,7 +42,7 @@ public class TestUserRoutes
             x.GetListAsync(page) == Task.FromResult(TestDirectory));
 
         // Act
-        var result = await (Task<IResult>)CallCrud("GetListAsync")!.Invoke(null, new object[] { page, string.Empty, mockService })!;
+        var result = await (Task<IResult>)CallCrud("GetListAsync")!.Invoke(null, [page, string.Empty, mockService])!;
 
         // Assert
         var okResult = result as Ok<DirectoryModel>;
@@ -62,7 +62,7 @@ public class TestUserRoutes
             x.SearchListAsync("foo") == Task.FromResult(TestDirectory));
 
         // Act
-        var result = await (Task<IResult>)CallCrud("GetListAsync")!.Invoke(null, new object[] { page, "foo", mockService })!;
+        var result = await (Task<IResult>)CallCrud("GetListAsync")!.Invoke(null, [page, "foo", mockService])!;
 
         // Assert
         var okResult = result as Ok<DirectoryModel>;
@@ -80,7 +80,7 @@ public class TestUserRoutes
             x.CreateAsync(TestUser) == Task.FromResult(TestUser));
 
         // Act
-        var result = await (Task<IResult>)CallCrud("CreateAsync")!.Invoke(null, new object[] { TestUser, mockService })!;
+        var result = await (Task<IResult>)CallCrud("CreateAsync")!.Invoke(null, [TestUser, mockService])!;
 
         // Assert
         var okResult = result as Created<UserModel>;
@@ -98,7 +98,7 @@ public class TestUserRoutes
             x.ReadAsync(It.IsAny<string>()) == Task.FromResult(TestUser));
 
         // Act
-        var result = await (Task<IResult>)CallCrud("ReadAsync")!.Invoke(null, new object[] { TestUser.Id, mockService })!;
+        var result = await (Task<IResult>)CallCrud("ReadAsync")!.Invoke(null, [TestUser.Id, mockService])!;
 
         // Assert
         var okResult = result as Ok<UserModel>;
@@ -114,7 +114,7 @@ public class TestUserRoutes
         var mockService = Mock.Of<IUserService>();
 
         // Act
-        var result = await (Task<IResult>)CallCrud("ReadAsync")!.Invoke(null, new object[] { TestUser.Id, mockService })!;
+        var result = await (Task<IResult>)CallCrud("ReadAsync")!.Invoke(null, [TestUser.Id, mockService])!;
 
         // Assert
         var okResult = result as Ok;
@@ -133,7 +133,7 @@ public class TestUserRoutes
         string existingId = TestUser.Id;
 
         // Act
-        var result = await (Task<IResult>)CallCrud("UpdateAsync")!.Invoke(null, new object[] { existingId, TestUser, mockService })!;
+        var result = await (Task<IResult>)CallCrud("UpdateAsync")!.Invoke(null, [existingId, TestUser, mockService])!;
 
         // Assert
         var okResult = result as Ok<UserModel>;
@@ -150,7 +150,7 @@ public class TestUserRoutes
         var mockService = Mock.Of<IUserService>();
 
         // Act
-        var result = await (Task<IResult>)CallCrud("DeleteAsync")!.Invoke(null, new object[] { "2", mockService })!;
+        var result = await (Task<IResult>)CallCrud("DeleteAsync")!.Invoke(null, ["2", mockService])!;
 
         // Assert
         Assert.IsType<NoContent>(result);
