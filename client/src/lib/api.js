@@ -5,7 +5,9 @@ import axios from 'axios';
 import { isLoading, tokens } from '$lib/store.js';
 import { apiErrMsg, crud } from '$lib/const.js';
 
-const rootApi = import.meta.env.VITE_API_URL;
+const apiUri = import.meta.env.VITE_API_URL;
+const isSelfHostedClient = apiUri.indexOf('http') < 0;
+const rootApi = isSelfHostedClient ? `${window.location}${apiUri}` : apiUri;
 const isMock = rootApi.indexOf('mock') > -1;
 const axiosCallAsync = async (params) => {
   isLoading.set(true);

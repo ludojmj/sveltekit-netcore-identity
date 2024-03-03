@@ -102,11 +102,11 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 function countLetter(str, find) {
   return str.split(find).length - 1;
 }
-function parseJwt(token) {
+const parseJwt = (payload) => {
   return JSON.parse(
-    b64DecodeUnicode(token.split(".")[1].replace("-", "+").replace("_", "/"))
+    b64DecodeUnicode(payload.replaceAll(/-/g, "+").replaceAll(/_/g, "/"))
   );
-}
+};
 function b64DecodeUnicode(str) {
   return decodeURIComponent(
     Array.prototype.map.call(
@@ -133,7 +133,7 @@ const extractTokenPayload = (token) => {
       return null;
     }
     if (countLetter(token, ".") === 2) {
-      return parseJwt(token);
+      return parseJwt(token.split(".")[1]);
     } else {
       return null;
     }
@@ -145,18 +145,18 @@ const extractTokenPayload = (token) => {
 const isTokensOidcValid = (tokens, nonce, oidcServerConfiguration) => {
   if (tokens.idTokenPayload) {
     const idTokenPayload = tokens.idTokenPayload;
-    if (oidcServerConfiguration.issuer !== idTokenPayload.iss) {
+    if (idTokenPayload && oidcServerConfiguration.issuer !== idTokenPayload.iss) {
       return { isValid: false, reason: `Issuer does not match (oidcServerConfiguration issuer) ${oidcServerConfiguration.issuer} !== (idTokenPayload issuer) ${idTokenPayload.iss}` };
     }
     const currentTimeUnixSecond = (/* @__PURE__ */ new Date()).getTime() / 1e3;
-    if (idTokenPayload.exp && idTokenPayload.exp < currentTimeUnixSecond) {
+    if (idTokenPayload && idTokenPayload.exp && idTokenPayload.exp < currentTimeUnixSecond) {
       return { isValid: false, reason: `Token expired at (idTokenPayload exp) ${idTokenPayload.exp} < (currentTimeUnixSecond) ${currentTimeUnixSecond}` };
     }
     const timeInSevenDays = 60 * 60 * 24 * 7;
-    if (idTokenPayload.iat && idTokenPayload.iat + timeInSevenDays < currentTimeUnixSecond) {
+    if (idTokenPayload && idTokenPayload.iat && idTokenPayload.iat + timeInSevenDays < currentTimeUnixSecond) {
       return { isValid: false, reason: `Token is used from too long time (idTokenPayload iat + timeInSevenDays) ${idTokenPayload.iat + timeInSevenDays} < (currentTimeUnixSecond) ${currentTimeUnixSecond}` };
     }
-    if (nonce && idTokenPayload.nonce && idTokenPayload.nonce !== nonce) {
+    if (idTokenPayload && nonce && idTokenPayload.nonce && idTokenPayload.nonce !== nonce) {
       return { isValid: false, reason: `Nonce does not match (nonce) ${nonce} !== (idTokenPayload nonce) ${idTokenPayload.nonce}` };
     }
   }
@@ -193,11 +193,19 @@ function _hideTokens(tokens, currentDatabaseElement, configurationName) {
     secureTokens.access_token = TOKEN.ACCESS_TOKEN + "_" + configurationName;
   }
   tokens.accessTokenPayload = accessTokenPayload;
+  const oldTokens = currentDatabaseElement.tokens;
+  let id_token;
+  if (oldTokens != null && "id_token" in oldTokens && !("id_token" in tokens)) {
+    id_token = oldTokens.id_token;
+  } else {
+    id_token = tokens.id_token;
+  }
+  tokens.id_token = id_token;
   let _idTokenPayload = null;
-  if (tokens.id_token) {
-    _idTokenPayload = extractTokenPayload(tokens.id_token);
-    tokens.idTokenPayload = { ..._idTokenPayload };
-    if (_idTokenPayload.nonce && currentDatabaseElement.nonce != null) {
+  if (id_token) {
+    _idTokenPayload = extractTokenPayload(id_token);
+    tokens.idTokenPayload = _idTokenPayload != null ? { ..._idTokenPayload } : null;
+    if (_idTokenPayload && _idTokenPayload.nonce && currentDatabaseElement.nonce != null) {
       const keyNonce = TOKEN.NONCE_TOKEN + "_" + currentDatabaseElement.configurationName;
       _idTokenPayload.nonce = keyNonce;
     }
@@ -230,8 +238,8 @@ function _hideTokens(tokens, currentDatabaseElement, configurationName) {
   if (!isValid) {
     throw Error(`Tokens are not OpenID valid, reason: ${reason}`);
   }
-  if (currentDatabaseElement.tokens != null && "refresh_token" in currentDatabaseElement.tokens && !("refresh_token" in tokens)) {
-    const refreshToken = currentDatabaseElement.tokens.refresh_token;
+  if (oldTokens != null && "refresh_token" in oldTokens && !("refresh_token" in tokens)) {
+    const refreshToken = oldTokens.refresh_token;
     currentDatabaseElement.tokens = {
       ...tokens,
       refresh_token: refreshToken
@@ -242,16 +250,26 @@ function _hideTokens(tokens, currentDatabaseElement, configurationName) {
   currentDatabaseElement.status = "LOGGED_IN";
   return secureTokens;
 }
+const demonstratingProofOfPossessionNonceResponseHeader = "DPoP-Nonce";
 function hideTokens(currentDatabaseElement) {
   const configurationName = currentDatabaseElement.configurationName;
   return (response) => {
     if (response.status !== 200) {
       return response;
     }
+    const newHeaders = new Headers(response.headers);
+    if (response.headers.has(demonstratingProofOfPossessionNonceResponseHeader)) {
+      currentDatabaseElement.demonstratingProofOfPossessionNonce = response.headers.get(demonstratingProofOfPossessionNonceResponseHeader);
+      newHeaders.delete(demonstratingProofOfPossessionNonceResponseHeader);
+    }
     return response.json().then((tokens) => {
       const secureTokens = _hideTokens(tokens, currentDatabaseElement, configurationName);
       const body = JSON.stringify(secureTokens);
-      return new Response(body, response);
+      return new Response(body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: newHeaders
+      });
     });
   };
 }
@@ -259,7 +277,186 @@ function replaceCodeVerifier(codeVerifier, newCodeVerifier) {
   const regex = /code_verifier=[A-Za-z0-9_-]+/i;
   return codeVerifier.replace(regex, `code_verifier=${newCodeVerifier}`);
 }
-const version = "7.13.14";
+const extractConfigurationNameFromCodeVerifier = (chaine) => {
+  const regex = /CODE_VERIFIER_SECURED_BY_OIDC_SERVICE_WORKER_([^&\s]+)/;
+  const result = chaine.match(regex);
+  if (result && result.length > 1) {
+    return result[1];
+  } else {
+    return null;
+  }
+};
+const version = "7.19.0";
+function strToUint8(str) {
+  return new TextEncoder().encode(str);
+}
+function binToUrlBase64(bin) {
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+/g, "");
+}
+function utf8ToBinaryString(str) {
+  const escstr = encodeURIComponent(str);
+  return escstr.replace(/%([0-9A-F]{2})/g, function(match, p1) {
+    return String.fromCharCode(parseInt(p1, 16));
+  });
+}
+const uint8ToUrlBase64 = (uint8) => {
+  let bin = "";
+  uint8.forEach(function(code) {
+    bin += String.fromCharCode(code);
+  });
+  return binToUrlBase64(bin);
+};
+function strToUrlBase64(str) {
+  return binToUrlBase64(utf8ToBinaryString(str));
+}
+const defaultDemonstratingProofOfPossessionConfiguration = {
+  importKeyAlgorithm: {
+    name: "ECDSA",
+    namedCurve: "P-256",
+    hash: { name: "ES256" }
+  },
+  signAlgorithm: { name: "ECDSA", hash: { name: "SHA-256" } },
+  generateKeyAlgorithm: {
+    name: "ECDSA",
+    namedCurve: "P-256"
+  },
+  digestAlgorithm: { name: "SHA-256" },
+  jwtHeaderAlgorithm: "ES256"
+};
+const sign = (w) => async (jwk, headers, claims, demonstratingProofOfPossessionConfiguration, jwtHeaderType = "dpop+jwt") => {
+  jwk = Object.assign({}, jwk);
+  headers.typ = jwtHeaderType;
+  headers.alg = demonstratingProofOfPossessionConfiguration.jwtHeaderAlgorithm;
+  switch (headers.alg) {
+    case "ES256":
+      headers.jwk = { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y };
+      break;
+    case "RS256":
+      headers.jwk = { kty: jwk.kty, n: jwk.n, e: jwk.e, kid: headers.kid };
+      break;
+    default:
+      throw new Error("Unknown or not implemented JWS algorithm");
+  }
+  const jws = {
+    // @ts-ignore
+    // JWT "headers" really means JWS "protected headers"
+    protected: strToUrlBase64(JSON.stringify(headers)),
+    // @ts-ignore
+    // JWT "claims" are really a JSON-defined JWS "payload"
+    payload: strToUrlBase64(JSON.stringify(claims))
+  };
+  const keyType = demonstratingProofOfPossessionConfiguration.importKeyAlgorithm;
+  const exportable = true;
+  const privileges = ["sign"];
+  const privateKey = await w.crypto.subtle.importKey("jwk", jwk, keyType, exportable, privileges);
+  const data = strToUint8(`${jws.protected}.${jws.payload}`);
+  const signatureType = demonstratingProofOfPossessionConfiguration.signAlgorithm;
+  const signature = await w.crypto.subtle.sign(signatureType, privateKey, data);
+  jws.signature = uint8ToUrlBase64(new Uint8Array(signature));
+  return `${jws.protected}.${jws.payload}.${jws.signature}`;
+};
+var JWT = { sign };
+const generate = (w) => async (generateKeyAlgorithm) => {
+  const keyType = generateKeyAlgorithm;
+  const exportable = true;
+  const privileges = ["sign", "verify"];
+  const key = await w.crypto.subtle.generateKey(keyType, exportable, privileges);
+  return await w.crypto.subtle.exportKey("jwk", key.privateKey);
+};
+const neuter = (jwk) => {
+  const copy = Object.assign({}, jwk);
+  delete copy.d;
+  copy.key_ops = ["verify"];
+  return copy;
+};
+const EC = {
+  generate,
+  neuter
+};
+const thumbprint = (w) => async (jwk, digestAlgorithm) => {
+  let sortedPub;
+  switch (jwk.kty) {
+    case "EC":
+      sortedPub = '{"crv":"CRV","kty":"EC","x":"X","y":"Y"}'.replace("CRV", jwk.crv).replace("X", jwk.x).replace("Y", jwk.y);
+      break;
+    case "RSA":
+      sortedPub = '{"e":"E","kty":"RSA","n":"N"}'.replace("E", jwk.e).replace("N", jwk.n);
+      break;
+    default:
+      throw new Error("Unknown or not implemented JWK type");
+  }
+  const hash = await w.crypto.subtle.digest(digestAlgorithm, strToUint8(sortedPub));
+  return uint8ToUrlBase64(new Uint8Array(hash));
+};
+var JWK = { thumbprint };
+const generateJwkAsync = (w) => async (generateKeyAlgorithm) => {
+  const jwk = await EC.generate(w)(generateKeyAlgorithm);
+  return jwk;
+};
+const generateJwtDemonstratingProofOfPossessionAsync = (w) => (demonstratingProofOfPossessionConfiguration) => async (jwk, method = "POST", url, extrasClaims = {}) => {
+  const claims = {
+    // https://www.rfc-editor.org/rfc/rfc9449.html#name-concept
+    jti: btoa(guid()),
+    htm: method,
+    htu: url,
+    iat: Math.round(Date.now() / 1e3),
+    ...extrasClaims
+  };
+  const kid = await JWK.thumbprint(w)(jwk, demonstratingProofOfPossessionConfiguration.digestAlgorithm);
+  const jwt = await JWT.sign(w)(jwk, { kid }, claims, demonstratingProofOfPossessionConfiguration);
+  return jwt;
+};
+const guid = () => {
+  const guidHolder = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
+  const hex = "0123456789abcdef";
+  let r = 0;
+  let guidResponse = "";
+  for (let i = 0; i < 36; i++) {
+    if (guidHolder[i] !== "-" && guidHolder[i] !== "4") {
+      r = Math.random() * 16 | 0;
+    }
+    if (guidHolder[i] === "x") {
+      guidResponse += hex[r];
+    } else if (guidHolder[i] === "y") {
+      r &= 3;
+      r |= 8;
+      guidResponse += hex[r];
+    } else {
+      guidResponse += guidHolder[i];
+    }
+  }
+  return guidResponse;
+};
+const isDpop = (trustedDomain) => {
+  if (Array.isArray(trustedDomain)) {
+    return false;
+  }
+  return trustedDomain.demonstratingProofOfPossession ?? false;
+};
+const getDpopConfiguration = (trustedDomain) => {
+  if (!isDpop(trustedDomain)) {
+    return null;
+  }
+  if (Array.isArray(trustedDomain)) {
+    return null;
+  }
+  return trustedDomain.demonstratingProofOfPossessionConfiguration ?? defaultDemonstratingProofOfPossessionConfiguration;
+};
+function textEncodeLite(str) {
+  const buf = new ArrayBuffer(str.length);
+  const bufView = new Uint8Array(buf);
+  for (let i = 0; i < str.length; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return bufView;
+}
+function base64urlOfHashOfASCIIEncodingAsync(code) {
+  return new Promise((resolve, reject) => {
+    crypto.subtle.digest("SHA-256", textEncodeLite(code)).then((buffer) => {
+      return resolve(uint8ToUrlBase64(new Uint8Array(buffer)));
+    }, (error) => reject(error));
+  });
+}
 if (typeof trustedTypes !== "undefined" && typeof trustedTypes.createPolicy == "function") {
   trustedTypes.createPolicy("default", {
     createScriptURL: function(url) {
@@ -283,7 +480,6 @@ const handleActivate = (event) => {
   console.log("[OidcServiceWorker] service worker activated " + id);
   event.waitUntil(_self.clients.claim());
 };
-let currentLoginCallbackConfigurationName = null;
 const database = {};
 const getCurrentDatabasesTokenEndpoint = (database2, url) => {
   const databases = [];
@@ -314,6 +510,18 @@ const keepAliveAsync = async (event) => {
   }
   return response;
 };
+async function generateDpopAsync(originalRequest, currentDatabase, url, extrasClaims = {}) {
+  const headersExtras = serializeHeaders(originalRequest.headers);
+  if (currentDatabase && currentDatabase.demonstratingProofOfPossessionConfiguration && currentDatabase.demonstratingProofOfPossessionJwkJson) {
+    const dpopConfiguration = currentDatabase.demonstratingProofOfPossessionConfiguration;
+    const jwk = currentDatabase.demonstratingProofOfPossessionJwkJson;
+    headersExtras["dpop"] = await generateJwtDemonstratingProofOfPossessionAsync(self)(dpopConfiguration)(jwk, "POST", url, extrasClaims);
+    if (currentDatabase.demonstratingProofOfPossessionNonce != null) {
+      headersExtras["nonce"] = currentDatabase.demonstratingProofOfPossessionNonce;
+    }
+  }
+  return headersExtras;
+}
 const handleFetch = async (event) => {
   const originalRequest = event.request;
   const url = normalizeUrl(originalRequest.url);
@@ -340,9 +548,14 @@ const handleFetch = async (event) => {
         ...serializeHeaders(originalRequest.headers)
       };
     } else {
+      const authorization = originalRequest.headers.get("authorization");
+      let authenticationMode = "Bearer";
+      if (authorization) {
+        authenticationMode = authorization.split(" ")[0];
+      }
       headers = {
         ...serializeHeaders(originalRequest.headers),
-        authorization: "Bearer " + currentDatabaseForRequestAccessToken.tokens.access_token
+        authorization: authenticationMode + " " + currentDatabaseForRequestAccessToken.tokens.access_token
       };
     }
     let init;
@@ -369,12 +582,15 @@ const handleFetch = async (event) => {
   if (numberDatabase > 0) {
     const maPromesse = new Promise((resolve, reject) => {
       const clonedRequest = originalRequest.clone();
-      const response = clonedRequest.text().then((actualBody) => {
+      const response = clonedRequest.text().then(async (actualBody) => {
         if (actualBody.includes(TOKEN.REFRESH_TOKEN) || actualBody.includes(TOKEN.ACCESS_TOKEN)) {
+          let headers = serializeHeaders(originalRequest.headers);
           let newBody = actualBody;
           for (let i = 0; i < numberDatabase; i++) {
             const currentDb = currentDatabases[i];
             if (currentDb && currentDb.tokens != null) {
+              const claimsExtras = { ath: await base64urlOfHashOfASCIIEncodingAsync(currentDb.tokens.access_token) };
+              headers = await generateDpopAsync(originalRequest, currentDb, url, claimsExtras);
               const keyRefreshToken = TOKEN.REFRESH_TOKEN + "_" + currentDb.configurationName;
               if (actualBody.includes(keyRefreshToken)) {
                 newBody = newBody.replace(
@@ -399,7 +615,7 @@ const handleFetch = async (event) => {
             body: newBody,
             method: clonedRequest.method,
             headers: {
-              ...serializeHeaders(originalRequest.headers)
+              ...headers
             },
             mode: clonedRequest.mode,
             cache: clonedRequest.cache,
@@ -419,9 +635,11 @@ const handleFetch = async (event) => {
             });
           }
           return fetchPromise.then(hideTokens(currentDatabase));
-        } else if (actualBody.includes("code_verifier=") && currentLoginCallbackConfigurationName) {
+        } else if (actualBody.includes("code_verifier=") && extractConfigurationNameFromCodeVerifier(actualBody) != null) {
+          const currentLoginCallbackConfigurationName = extractConfigurationNameFromCodeVerifier(
+            actualBody
+          );
           currentDatabase = database[currentLoginCallbackConfigurationName];
-          currentLoginCallbackConfigurationName = null;
           let newBody = actualBody;
           if (currentDatabase && currentDatabase.codeVerifier != null) {
             newBody = replaceCodeVerifier(
@@ -429,11 +647,12 @@ const handleFetch = async (event) => {
               currentDatabase.codeVerifier
             );
           }
+          const headersExtras = await generateDpopAsync(originalRequest, currentDatabase, url);
           return fetch(originalRequest, {
             body: newBody,
             method: clonedRequest.method,
             headers: {
-              ...serializeHeaders(originalRequest.headers)
+              ...headersExtras
             },
             mode: clonedRequest.mode,
             cache: clonedRequest.cache,
@@ -441,6 +660,7 @@ const handleFetch = async (event) => {
             referrer: clonedRequest.referrer,
             credentials: clonedRequest.credentials,
             integrity: clonedRequest.integrity
+            // @ts-ignore
           }).then(hideTokens(currentDatabase));
         }
         return fetch(originalRequest, {
@@ -466,7 +686,7 @@ const handleFetch = async (event) => {
     event.respondWith(maPromesse);
   }
 };
-const handleMessage = (event) => {
+const handleMessage = async (event) => {
   const port = event.ports[0];
   const data = event.data;
   if (event.data.type === "claim") {
@@ -496,7 +716,8 @@ const handleMessage = (event) => {
       setAccessTokenToNavigateRequests: doNotSetAccessTokenToNavigateRequests ?? true,
       convertAllRequestsToCorsExceptNavigate: convertAllRequestsToCorsExceptNavigate ?? false,
       demonstratingProofOfPossessionNonce: null,
-      demonstratingProofOfPossessionJwkJson: null
+      demonstratingProofOfPossessionJwkJson: null,
+      demonstratingProofOfPossessionConfiguration: null
     };
     currentDatabase = database[configurationName];
     if (!trustedDomains[configurationName]) {
@@ -508,6 +729,9 @@ const handleMessage = (event) => {
       currentDatabase.tokens = null;
       currentDatabase.state = null;
       currentDatabase.codeVerifier = null;
+      currentDatabase.demonstratingProofOfPossessionNonce = null;
+      currentDatabase.demonstratingProofOfPossessionJwkJson = null;
+      currentDatabase.demonstratingProofOfPossessionConfiguration = null;
       currentDatabase.status = data.data.status;
       port.postMessage({ configurationName });
       return;
@@ -527,11 +751,15 @@ const handleMessage = (event) => {
       }
       currentDatabase.oidcServerConfiguration = oidcServerConfiguration;
       currentDatabase.oidcConfiguration = data.data.oidcConfiguration;
-      const where = data.data.where;
-      if (where === "loginCallbackAsync" || where === "tryKeepExistingSessionAsync") {
-        currentLoginCallbackConfigurationName = configurationName;
-      } else {
-        currentLoginCallbackConfigurationName = null;
+      if (currentDatabase.demonstratingProofOfPossessionConfiguration == null) {
+        const demonstratingProofOfPossessionConfiguration = getDpopConfiguration(trustedDomains[configurationName]);
+        if (demonstratingProofOfPossessionConfiguration != null) {
+          if (currentDatabase.oidcConfiguration.demonstrating_proof_of_possession) {
+            console.warn("In service worker, demonstrating_proof_of_possession must be configured from trustedDomains file");
+          }
+          currentDatabase.demonstratingProofOfPossessionConfiguration = demonstratingProofOfPossessionConfiguration;
+          currentDatabase.demonstratingProofOfPossessionJwkJson = await generateJwkAsync(self)(demonstratingProofOfPossessionConfiguration.generateKeyAlgorithm);
+        }
       }
       if (!currentDatabase.tokens) {
         port.postMessage({
@@ -572,19 +800,6 @@ const handleMessage = (event) => {
       port.postMessage({
         configurationName,
         demonstratingProofOfPossessionNonce
-      });
-      return;
-    }
-    case "setDemonstratingProofOfPossessionJwk": {
-      currentDatabase.demonstratingProofOfPossessionJwkJson = data.data.demonstratingProofOfPossessionJwkJson;
-      port.postMessage({ configurationName });
-      return;
-    }
-    case "getDemonstratingProofOfPossessionJwk": {
-      const demonstratingProofOfPossessionJwkJson = currentDatabase.demonstratingProofOfPossessionJwkJson;
-      port.postMessage({
-        configurationName,
-        demonstratingProofOfPossessionJwkJson
       });
       return;
     }
@@ -635,8 +850,7 @@ const handleMessage = (event) => {
       return;
     }
     default: {
-      currentDatabase.items = { ...data.data };
-      port.postMessage({ configurationName });
+      return;
     }
   }
 };
