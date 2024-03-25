@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -28,7 +27,7 @@ public class TestUserRoutes
 
     private static readonly DirectoryModel TestDirectory = new()
     {
-        UserList = new Collection<UserModel> { TestUser }
+        UserList = [TestUser]
     };
 
     // ***** ***** ***** LIST
