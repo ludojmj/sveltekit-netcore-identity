@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -39,7 +38,7 @@ public class TestStuffRoutes
 
     private static readonly StuffModel TestStuff = new()
     {
-        DatumList = new Collection<DatumModel> { TestDatum }
+        DatumList = [TestDatum]
     };
 
     // ***** ***** ***** LIST

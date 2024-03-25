@@ -113,10 +113,10 @@ if (!env.IsProduction())
 {
     app.UseSwagger(c =>
         c.PreSerializeFilters.Add((swagger, httpReq) =>
-            swagger.Servers = new List<OpenApiServer>
-            {
-                new() { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}" }
-            }));
+            swagger.Servers =
+            [
+                new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}" }
+            ]));
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Server V1");

@@ -64,7 +64,7 @@ const getCurrentDatabaseDomain = (database2, url, trustedDomains2) => {
     }
     const trustedDomain = trustedDomains2 == null ? [] : trustedDomains2[key];
     const domains = getDomains(trustedDomain, "accessToken");
-    const domainsToSendTokens = oidcServerConfiguration.userInfoEndpoint ? [oidcServerConfiguration.userInfoEndpoint, ...domains] : [...domains];
+    const domainsToSendTokens = oidcServerConfiguration.userInfoEndpoint ? [normalizeUrl(oidcServerConfiguration.userInfoEndpoint), ...domains] : [...domains];
     let hasToSendToken = false;
     if (domainsToSendTokens.find((f) => f === acceptAnyDomainToken)) {
       hasToSendToken = true;
@@ -286,7 +286,7 @@ const extractConfigurationNameFromCodeVerifier = (chaine) => {
     return null;
   }
 };
-const version = "7.19.0";
+const version = "7.20.1";
 function strToUint8(str) {
   return new TextEncoder().encode(str);
 }
