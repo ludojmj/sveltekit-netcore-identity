@@ -1,6 +1,6 @@
 // oidc.js
 import { browser } from '$app/environment';
-import { OidcClient } from '@axa-fr/oidc-client';
+import { OidcClient, TokenAutomaticRenewMode } from '@axa-fr/oidc-client';
 import { isAuthLoading, tokens } from '$lib/store.js';
 
 let ori = '.';
@@ -22,7 +22,7 @@ const configuration = {
   silent_login_timeout: 1000,
   monitor_session: true,
   token_renew_mode: 'access_token_invalid',
-  token_automatic_renew_mode: 'AutomaticOnlyWhenFetchExecuted'
+  token_automatic_renew_mode: TokenAutomaticRenewMode.AutomaticOnlyWhenFetchExecuted
 };
 
 const vanillaOidc = OidcClient.getOrCreate(() => fetch)(configuration);
