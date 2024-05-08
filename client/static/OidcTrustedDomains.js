@@ -9,51 +9,6 @@ const trustedDomains = {
     'https://localhost:5001',
     'https://rita.azurewebsites.net',
     'https://ludal.azurewebsites.net',
-    'https://demo.duendesoftware.com',
-    'https://kdhttps.auth0.com'
-  ],
-  config_classic: [
-    'http://localhost:5173',
-    'https://localhost:5001',
-    'https://rita.azurewebsites.net',
-    'https://ludal.azurewebsites.net',
-    'https://demo.duendesoftware.com'
-  ],
-  config_without_silent_login: [
-    'http://localhost:5173',
-    'https://localhost:5001',
-    'https://rita.azurewebsites.net',
-    'https://ludal.azurewebsites.net',
-    'https://demo.duendesoftware.com'
-  ],
-  config_without_refresh_token: [
-    'http://localhost:5173',
-    'https://localhost:5001',
-    'https://rita.azurewebsites.net',
-    'https://ludal.azurewebsites.net',
-    'https://demo.duendesoftware.com'
-  ],
-  config_without_refresh_token_silent_login: [
-    'http://localhost:5173',
-    'https://localhost:5001',
-    'https://rita.azurewebsites.net',
-    'https://ludal.azurewebsites.net',
-    'https://demo.duendesoftware.com'
-  ],
-  config_google: [
-    'http://localhost:5173',
-    'https://localhost:5001',
-    'https://rita.azurewebsites.net',
-    'https://ludal.azurewebsites.net',
-    'https://oauth2.googleapis.com',
-    'https://openidconnect.googleapis.com',
-    'https://accounts.google.com'
-  ],
-  config_with_hash: [
-    'http://localhost:5173',
-    'https://localhost:5001',
-    'https://rita.azurewebsites.net',
-    'https://ludal.azurewebsites.net',
     'https://demo.duendesoftware.com'
   ]
 };
