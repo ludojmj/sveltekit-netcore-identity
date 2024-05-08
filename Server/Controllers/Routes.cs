@@ -3,7 +3,7 @@ namespace Server.Controllers;
 public static class Routes
 {
     public static void MapStuff(this RouteGroupBuilder group) => StuffRouteHandlers
-        .Map(group).WithTags("Stuff").RequireAuthorization();
+        .Map(group).WithTags("Stuff");
     public static void MapUser(this RouteGroupBuilder group) => UserRouteHandlers
-        .Map(group).WithTags("User").RequireAuthorization();
+        .Map(group).WithTags("User");
 }

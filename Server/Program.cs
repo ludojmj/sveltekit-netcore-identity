@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -16,7 +17,6 @@ var env = builder.Environment;
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ErrorHandler>();
 builder.Services.AddHealthChecks();
-builder.Services.AddControllers();
 builder.Services.AddCors();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
@@ -48,7 +48,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.Authority = conf["JwtToken:Authority"];
         options.Audience = conf["JwtToken:Audience"];
     });
-
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+        .Build());
 builder.Services.AddHsts(configureOptions =>
 {
     configureOptions.Preload = true;
@@ -113,10 +117,7 @@ if (!env.IsProduction())
 {
     app.UseSwagger(c =>
         c.PreSerializeFilters.Add((swagger, httpReq) =>
-            swagger.Servers =
-            [
-                new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}" }
-            ]));
+            swagger.Servers = [new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}" }]));
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Server V1");
@@ -125,7 +126,6 @@ if (!env.IsProduction())
     });
 }
 
-app.UseRouting();
 if (env.IsDevelopment())
 {
     app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
@@ -145,7 +145,7 @@ app.UseHttpLogging();
 app.Use(async (context, next) =>
 {
     var userInfo = context.GetCurrentUser();
-    app.Logger.LogInformation("{userInfo}", userInfo);
+    app.Logger.LogInformation("{UserInfo}", userInfo);
     await next();
 });
 
