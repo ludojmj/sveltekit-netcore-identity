@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Server.Controllers;
@@ -22,18 +20,6 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConfiguration(conf.GetSection("Logging")));
 builder.Services.AddApplicationInsightsTelemetry();
-builder.Services.AddHttpLogging(logging =>
-{
-    logging.LoggingFields =
-        HttpLoggingFields.RequestPath |
-        HttpLoggingFields.RequestQuery |
-        HttpLoggingFields.RequestBody |
-        HttpLoggingFields.ResponseStatusCode |
-        HttpLoggingFields.ResponseBody;
-    logging.RequestBodyLogLimit = 4096;
-    logging.ResponseBodyLogLimit = 4096;
-    logging.CombineLogs = true;
-});
 
 // Add DB
 builder.Services.AddDbContext<StuffDbContext>(options => options.UseSqlite(
@@ -48,11 +34,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.Authority = conf["JwtToken:Authority"];
         options.Audience = conf["JwtToken:Audience"];
     });
-builder.Services.AddAuthorizationBuilder()
-    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
-        .Build());
+builder.Services.AddAuthorization();
+
 builder.Services.AddHsts(configureOptions =>
 {
     configureOptions.Preload = true;
@@ -141,15 +124,7 @@ else
 }
 
 app.UseAuthorization();
-app.UseHttpLogging();
-app.Use(async (context, next) =>
-{
-    var userInfo = context.GetCurrentUser();
-    app.Logger.LogInformation("{UserInfo}", userInfo);
-    await next();
-});
-
-
+app.UseAuthorization();
 app.MapGroup("api/stuff").MapStuff();
 app.MapGroup("api/user").MapUser();
 app.MapFallbackToFile("/index.html");
