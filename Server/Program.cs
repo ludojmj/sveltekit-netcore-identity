@@ -48,11 +48,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.Authority = conf["JwtToken:Authority"];
         options.Audience = conf["JwtToken:Audience"];
     });
-builder.Services.AddAuthorizationBuilder()
-    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
-        .Build());
+builder.Services.AddAuthorization();
+
 builder.Services.AddHsts(configureOptions =>
 {
     configureOptions.Preload = true;
@@ -141,6 +138,7 @@ else
 }
 
 app.UseAuthorization();
+app.UseAuthorization();
 app.UseHttpLogging();
 app.Use(async (context, next) =>
 {
@@ -148,7 +146,6 @@ app.Use(async (context, next) =>
     app.Logger.LogInformation("{UserInfo}", userInfo);
     await next();
 });
-
 
 app.MapGroup("api/stuff").MapStuff();
 app.MapGroup("api/user").MapUser();
