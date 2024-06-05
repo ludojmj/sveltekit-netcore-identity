@@ -123,7 +123,7 @@ else
     );
 }
 
-app.UseAuthorization();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapGroup("api/stuff").MapStuff();
 app.MapGroup("api/user").MapUser();
