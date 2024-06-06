@@ -5,14 +5,14 @@ namespace Server.Controllers;
 
 public static class StuffRouteHandlers
 {
-    public static RouteGroupBuilder Map(RouteGroupBuilder group)
+    public static IEndpointRouteBuilder MapStuffEndpoints(this IEndpointRouteBuilder builder)
     {
-        group.MapGet("", GetListAsync);
-        group.MapPost("", CreateAsync);
-        group.MapGet("{id}", ReadAsync);
-        group.MapPut("{id}", UpdateAsync);
-        group.MapDelete("{id}", DeleteAsync);
-        return group;
+        builder.MapGet("", GetListAsync);
+        builder.MapPost("", CreateAsync);
+        builder.MapGet("{id}", ReadAsync);
+        builder.MapPut("{id}", UpdateAsync);
+        builder.MapDelete("{id}", DeleteAsync);
+        return builder;
     }
 
     private static async Task<IResult> GetListAsync(int? page, string search, IStuffService stuffService)

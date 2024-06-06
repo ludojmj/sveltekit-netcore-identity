@@ -125,9 +125,8 @@ else
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapGroup("api/stuff").MapStuff();
-app.MapGroup("api/user").MapUser();
+app.MapRoutes();
 app.MapFallbackToFile("/index.html");
 app.MapHealthChecks("/health");
 
-app.Run();
+await app.RunAsync();
