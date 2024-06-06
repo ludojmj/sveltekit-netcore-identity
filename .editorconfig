@@ -1,0 +1,39 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+charset = utf-8
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+[*.cs]
+trim_trailing_whitespace = true
+
+# RCS1123: Add parentheses when necessary
+dotnet_diagnostic.RCS1123.severity = none
+
+# MA0004: Use Task.ConfigureAwait(false)
+dotnet_diagnostic.MA0004.severity = none
+
+# MA0006: Use String.Equals instead of equality operator
+dotnet_diagnostic.MA0006.severity = none
+
+# MA0007: Add a comma after the last value
+dotnet_diagnostic.MA0007.severity = none
+
+# MA0015: Specify the parameter name in ArgumentException
+dotnet_diagnostic.MA0015.severity = none
+
+# MA0040 - Forward the CancellationToken parameter to methods that take one
+dotnet_diagnostic.MA0040.severity = none
+
+# MA0051: Method is too long (n lines; maximum allowed: 60)
+dotnet_diagnostic.MA0051.severity = none
+
+# MA0074: Use an overload of 'Contains' that has a StringComparison parameter
+dotnet_diagnostic.MA0074.severity = none

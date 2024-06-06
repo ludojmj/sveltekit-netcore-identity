@@ -1,5 +1,3 @@
-using System.Reflection;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Moq;
 using Server.Controllers;
@@ -11,11 +9,6 @@ namespace Server.UnitTest.Controllers;
 
 public class TestStuffRoutes
 {
-    private static MethodInfo? CallCrud(string methodName)
-    {
-        return typeof(StuffRouteHandlers).GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic);
-    }
-
     private static readonly Guid IdTest = Guid.NewGuid();
 
     private static readonly UserModel CurrentUserModelTest = new()
@@ -52,7 +45,7 @@ public class TestStuffRoutes
             x.GetListAsync(page) == Task.FromResult(TestStuff));
 
         // Act
-        var result = await (Task<IResult>)CallCrud("GetListAsync")!.Invoke(null, [page, string.Empty, mockService])!;
+        var result = await StuffRouteHandlers.GetListAsync(page, string.Empty, mockService);
 
         // Assert
         var okResult = result as Ok<StuffModel>;
@@ -72,7 +65,7 @@ public class TestStuffRoutes
             x.SearchListAsync("foo") == Task.FromResult(TestStuff));
 
         // Act
-        var result = await (Task<IResult>)CallCrud("GetListAsync")!.Invoke(null, [page, "foo", mockService])!;
+        var result = await StuffRouteHandlers.GetListAsync(page, "foo", mockService);
 
         // Assert
         var okResult = result as Ok<StuffModel>;
@@ -90,7 +83,7 @@ public class TestStuffRoutes
             x.CreateAsync(TestDatum) == Task.FromResult(TestDatum));
 
         // Act
-        var result = await (Task<IResult>)CallCrud("CreateAsync")!.Invoke(null, [TestDatum, mockService])!;
+        var result = await StuffRouteHandlers.CreateAsync(TestDatum, mockService);
 
         // Assert
         var okResult = result as Created<DatumModel>;
@@ -108,7 +101,7 @@ public class TestStuffRoutes
             x.ReadAsync(It.IsAny<Guid>()) == Task.FromResult(TestDatum));
 
         // Act
-        var result = await (Task<IResult>)CallCrud("ReadAsync")!.Invoke(null, [TestDatum.Id, mockService])!;
+        var result = await StuffRouteHandlers.ReadAsync(TestDatum.Id, mockService);
 
         // Assert
         var okResult = result as Ok<DatumModel>;
@@ -124,7 +117,7 @@ public class TestStuffRoutes
         var mockService = Mock.Of<IStuffService>();
 
         // Act
-        var result = await (Task<IResult>)CallCrud("ReadAsync")!.Invoke(null, [TestDatum.Id, mockService])!;
+        var result = await StuffRouteHandlers.ReadAsync(TestDatum.Id, mockService);
 
         // Assert
         var okResult = result as Ok;
@@ -143,7 +136,7 @@ public class TestStuffRoutes
         Guid existingId = TestDatum.Id;
 
         // Act
-        var result = await (Task<IResult>)CallCrud("UpdateAsync")!.Invoke(null, [existingId, TestDatum, mockService])!;
+        var result = await StuffRouteHandlers.UpdateAsync(existingId, TestDatum, mockService);
 
         // Assert
         var okResult = result as Ok<DatumModel>;
@@ -160,7 +153,7 @@ public class TestStuffRoutes
         var mockService = Mock.Of<IStuffService>();
 
         // Act
-        var result = await (Task<IResult>)CallCrud("DeleteAsync")!.Invoke(null, [Guid.NewGuid(), mockService])!;
+        var result = await StuffRouteHandlers.DeleteAsync(Guid.NewGuid(), mockService);
 
         // Assert
         Assert.IsType<NoContent>(result);

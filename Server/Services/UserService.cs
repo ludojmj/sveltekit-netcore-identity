@@ -76,17 +76,13 @@ public class UserService(StuffDbContext dbContext) : IUserService
             ?? throw new ArgumentException("Corrupted data.");
         dbUser = input.ToUpdate(dbUser);
         await dbContext.SaveChangesAsync();
-        var result = dbUser.ToUserModel();
-        return result;
+        return dbUser.ToUserModel();
     }
 
     public async Task DeleteAsync(string userId)
     {
-        TUser dbUser = await dbContext.TUsers.FirstOrDefaultAsync(x => x.UsrId == userId);
-        if (dbUser == null)
-        {
-            throw new ArgumentException("Corrupted data.");
-        }
+        TUser dbUser = await dbContext.TUsers.FirstOrDefaultAsync(x => x.UsrId == userId)
+            ?? throw new ArgumentException("Corrupted data.");
 
         dbContext.TUsers.Remove(dbUser);
         await dbContext.SaveChangesAsync();

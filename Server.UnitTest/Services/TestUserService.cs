@@ -3,16 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using Server.DbModels;
 using Server.Models;
 using Server.Services;
-using Server.Services.Interfaces;
+using System.Globalization;
 using Xunit;
 
 namespace Server.UnitTest.Services;
 
 public class TestUserService
 {
-    private readonly SqliteConnection _connection;
     private readonly StuffDbContext _dbContext;
-    private readonly IUserService _userService;
+    private readonly UserService _userService;
 
     private static readonly UserModel TestUserModel = new()
     {
@@ -38,21 +37,14 @@ public class TestUserService
 
     public TestUserService()
     {
-        _connection = new SqliteConnection("DataSource=:memory:");
-        _connection.Open();
+        var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
         var options = new DbContextOptionsBuilder<StuffDbContext>()
-            .UseSqlite(_connection)
+            .UseSqlite(connection)
             .Options;
         _dbContext = new StuffDbContext(options);
         _dbContext.Database.EnsureCreated();
         _userService = new UserService(_dbContext);
-    }
-
-    [Fact]
-    public void Dispose()
-    {
-        _dbContext.Dispose();
-        _connection.Close();
     }
 
     // ***** ***** ***** LIST
@@ -60,7 +52,7 @@ public class TestUserService
     public async Task UserService_GetListAsync_ShouldReturn_Ok()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
+        await _dbContext.AddAsync(_dbUser);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -77,7 +69,7 @@ public class TestUserService
     public async Task UserService_SearchListAsync_ShouldReturn_Ok()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
+        await _dbContext.AddAsync(_dbUser);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -96,11 +88,15 @@ public class TestUserService
         var dbUserList = new List<TUser>();
         for (int idx = 0; idx < 7; idx++)
         {
-            var tpmUser = new TUser { UsrId = _dbUser.UsrId + idx, UsrGivenName = _dbUser.UsrGivenName + idx };
+            var tpmUser = new TUser
+            {
+                UsrId = _dbUser.UsrId + idx.ToString(CultureInfo.InvariantCulture),
+                UsrGivenName = _dbUser.UsrGivenName + idx.ToString(CultureInfo.InvariantCulture)
+            };
             dbUserList.Add(tpmUser);
         }
 
-        _dbContext.AddRange(dbUserList);
+        await _dbContext.AddRangeAsync(dbUserList);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -133,7 +129,7 @@ public class TestUserService
     public async Task UserService_CreateAsync_ShouldThrow_InvalidOperationException()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
+        await _dbContext.AddAsync(_dbUser);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -144,7 +140,7 @@ public class TestUserService
         Assert.NotNull(exception);
         Assert.IsType<InvalidOperationException>(exception);
         // Id null
-        Assert.Contains("The instance of entity type", exception.Message);
+        Assert.Contains("The instance of entity type", exception.Message,StringComparison.Ordinal);
     }
 
     [Fact]
@@ -215,7 +211,7 @@ public class TestUserService
     public async Task UserService_ReadAsync_ShouldReturn_Ok()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
+        await _dbContext.AddAsync(_dbUser);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -245,7 +241,7 @@ public class TestUserService
     public async Task UserService_UpdateAsync_ShouldReturn_Ok()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
+        await _dbContext.AddAsync(_dbUser);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -338,12 +334,12 @@ public class TestUserService
     public async Task UserService_DeleteAsync_ShouldReturn_Ok()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
+        await _dbContext.AddAsync(_dbUser);
         await _dbContext.SaveChangesAsync();
 
         // Act
         await _userService.DeleteAsync("11");
-        var actual = _dbContext.TUsers.FirstOrDefault(x => x.UsrId == "1");
+        var actual = await _dbContext.TUsers.FirstOrDefaultAsync(x => x.UsrId == "1");
 
         // Assert
         Assert.Null(actual);

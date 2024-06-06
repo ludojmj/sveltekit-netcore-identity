@@ -48,7 +48,7 @@ public class StuffService(StuffDbContext dbContext, IHttpContextAccessor httpCon
         int dbCount = await query.CountAsync();
         if (dbCount > CstItemsPerPage)
         {
-            throw new ArgumentException("Too many results. Please narrow your search.");
+            throw new BusinessException("Too many results. Please narrow your search.");
         }
 
         // Get stuff and their users.
@@ -82,14 +82,8 @@ public class StuffService(StuffDbContext dbContext, IHttpContextAccessor httpCon
         TStuff dbStuff = await dbContext.TStuffs
             .Where(x => x.StfId == stuffId.ToString())
             .Include(x => x.StfUser)
-            .FirstOrDefaultAsync();
-        if (dbStuff == null)
-        {
-            throw new KeyNotFoundException("Stuff not found.");
-        }
-
-        var result = dbStuff.ToDatumModel();
-        return result;
+            .FirstOrDefaultAsync() ?? throw new KeyNotFoundException("Stuff not found.");
+        return dbStuff.ToDatumModel();
     }
 
     public async Task<DatumModel> UpdateAsync(Guid stuffId, DatumModel input)
