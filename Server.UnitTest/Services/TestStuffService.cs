@@ -5,7 +5,8 @@ using Moq;
 using Server.DbModels;
 using Server.Models;
 using Server.Services;
-using Server.Services.Interfaces;
+using Server.Shared;
+using System.Globalization;
 using System.Security.Claims;
 using Xunit;
 
@@ -14,7 +15,7 @@ namespace Server.UnitTest.Services;
 public class TestStuffService
 {
     private readonly StuffDbContext _dbContext;
-    private readonly IStuffService _stuffService;
+    private readonly StuffService _stuffService;
 
     private static readonly Guid IdTest = Guid.NewGuid();
 
@@ -81,8 +82,8 @@ public class TestStuffService
     public async Task StuffService_GetListAsync_ShouldReturn_Ok()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
-        _dbContext.Add(_dbStuff);
+        await _dbContext.AddAsync(_dbUser);
+        await _dbContext.AddAsync(_dbStuff);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -98,8 +99,8 @@ public class TestStuffService
     public async Task StuffService_GetListAsync_ShouldReturn_PageOne()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
-        _dbContext.Add(_dbStuff);
+        await _dbContext.AddAsync(_dbUser);
+        await _dbContext.AddAsync(_dbStuff);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -115,8 +116,8 @@ public class TestStuffService
     public async Task StuffService_SearchListAsync_ShouldReturn_Ok()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
-        _dbContext.Add(_dbStuff);
+        await _dbContext.AddAsync(_dbUser);
+        await _dbContext.AddAsync(_dbStuff);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -129,23 +130,23 @@ public class TestStuffService
     }
 
     [Fact]
-    public async Task StuffService_SearchListAsync_ShouldThrow_ArgumentException()
+    public async Task StuffService_SearchListAsync_ShouldThrow_BusinessException()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
+        await _dbContext.AddAsync(_dbUser);
         var dbStuffList = new List<TStuff>();
         for (int idx = 0; idx < 7; idx++)
         {
             var tmpStuff = new TStuff
             {
-                StfId = _dbStuff.StfId + (idx + 1),
+                StfId = _dbStuff.StfId + (idx + 1).ToString(CultureInfo.InvariantCulture),
                 StfUserId = _dbStuff.StfUserId,
                 StfLabel = _dbStuff.StfLabel
             };
             dbStuffList.Add(tmpStuff);
         }
 
-        _dbContext.AddRange(dbStuffList);
+        await _dbContext.AddRangeAsync(dbStuffList);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -154,7 +155,7 @@ public class TestStuffService
 
         // Assert
         Assert.NotNull(exception);
-        Assert.IsType<ArgumentException>(exception);
+        Assert.IsType<BusinessException>(exception);
         Assert.Equal("Too many results. Please narrow your search.", exception.Message);
     }
 
@@ -164,7 +165,7 @@ public class TestStuffService
     {
         // Arrange
         // Existing user
-        _dbContext.Add(_dbUser);
+        await _dbContext.AddAsync(_dbUser);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -198,7 +199,7 @@ public class TestStuffService
     {
         // Arrange
         DatumModelTest.Label = string.Empty;
-        _dbContext.Add(_dbUser);
+        await _dbContext.AddAsync(_dbUser);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -219,8 +220,8 @@ public class TestStuffService
     public async Task StuffService_ReadAsync_ShouldReturn_Ok()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
-        _dbContext.Add(_dbStuff);
+        await _dbContext.AddAsync(_dbUser);
+        await _dbContext.AddAsync(_dbStuff);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -253,8 +254,8 @@ public class TestStuffService
     public async Task StuffService_UpdateAsync_ShouldReturn_Ok()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
-        _dbContext.Add(_dbStuff);
+        await _dbContext.AddAsync(_dbUser);
+        await _dbContext.AddAsync(_dbStuff);
         await _dbContext.SaveChangesAsync();
 
         // Act
@@ -315,13 +316,13 @@ public class TestStuffService
         // Arrange4
         _dbUser.UsrId = "2";
         _dbStuff.StfUserId = "2";
-        _dbContext.Add(_dbUser);
-        _dbContext.Add(_dbStuff);
+        await _dbContext.AddAsync(_dbUser);
+        await _dbContext.AddAsync(_dbStuff);
         await _dbContext.SaveChangesAsync();
         _dbUser.UsrId = "11";
 
         // Act4
-        serviceResult = _stuffService.UpdateAsync(new Guid(), DatumModelTest);
+        serviceResult = _stuffService.UpdateAsync(Guid.NewGuid(), DatumModelTest);
         exception = await Record.ExceptionAsync(() => serviceResult);
 
         // Assert4
@@ -339,13 +340,13 @@ public class TestStuffService
     public async Task StuffService_DeleteAsync_ShouldReturn_Ok()
     {
         // Arrange
-        _dbContext.Add(_dbUser);
-        _dbContext.Add(_dbStuff);
+        await _dbContext.AddAsync(_dbUser);
+        await _dbContext.AddAsync(_dbStuff);
         await _dbContext.SaveChangesAsync();
 
         // Act
         await _stuffService.DeleteAsync(IdTest);
-        var actual = _dbContext.TStuffs.FirstOrDefault(x => x.StfId == "1");
+        var actual = await _dbContext.TStuffs.FirstOrDefaultAsync(x => x.StfId == "1");
 
         // Assert
         Assert.Null(actual);
@@ -370,8 +371,8 @@ public class TestStuffService
         // Arrange2
         _dbUser.UsrId = "2";
         _dbStuff.StfUserId = "2";
-        _dbContext.Add(_dbUser);
-        _dbContext.Add(_dbStuff);
+        await _dbContext.AddAsync(_dbUser);
+        await _dbContext.AddAsync(_dbStuff);
         await _dbContext.SaveChangesAsync();
         _dbUser.UsrId = "11";
 

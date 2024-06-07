@@ -77,16 +77,16 @@ public class TestSecurityMiddlewareExtension
         Assert.NotNull(context.Response.Body);
         Assert.Equal(405, context.Response.StatusCode);
 
-        Assert.Empty(context.Response.Headers["Server"].ToString());
-        Assert.Empty(context.Response.Headers["X-Powered-By"].ToString());
-        Assert.Equal("no-cache, no-store, must-revalidate", context.Response.Headers["Cache-Control"].ToString());
-        Assert.Equal("script-src 'self' 'unsafe-inline'; worker-src 'self' blob:; object-src 'none'; frame-ancestors 'self';", context.Response.Headers["Content-Security-Policy"].ToString());
+        Assert.Equal("", context.Response.Headers.Server.ToString());
+        Assert.Equal("", context.Response.Headers.XPoweredBy.ToString());
+        Assert.Equal("no-cache, no-store, must-revalidate", context.Response.Headers.CacheControl);
+        Assert.Equal("script-src 'self' 'unsafe-inline'; worker-src 'self' blob:; object-src 'none'; frame-ancestors 'self';", context.Response.Headers.ContentSecurityPolicy);
         Assert.StartsWith("accelerometer", context.Response.Headers["Permissions-Policy"].ToString(), StringComparison.Ordinal);
         Assert.Equal("no-referrer", context.Response.Headers["Referrer-Policy"].ToString());
-        Assert.Equal("max-age=31536000; includeSubDomains; preload", context.Response.Headers["Strict-Transport-Security"].ToString());
-        Assert.Equal("nosniff", context.Response.Headers["X-Content-Type-Options"].ToString());
-        Assert.Equal("SAMEORIGIN", context.Response.Headers["X-Frame-Options"].ToString());
-        Assert.Equal("IE=Edge,chrome=1", context.Response.Headers["X-UA-Compatible"].ToString());
-        Assert.Equal("1; mode=block", context.Response.Headers["X-XSS-Protection"].ToString());
+        Assert.Equal("max-age=31536000; includeSubDomains; preload", context.Response.Headers.StrictTransportSecurity);
+        Assert.Equal("nosniff", context.Response.Headers.XContentTypeOptions);
+        Assert.Equal("SAMEORIGIN", context.Response.Headers.XFrameOptions);
+        Assert.Equal("IE=Edge,chrome=1", context.Response.Headers.XUACompatible);
+        Assert.Equal("1; mode=block", context.Response.Headers.XXSSProtection);
     }
 }

@@ -1,21 +1,27 @@
 using Server.Services.Interfaces;
 using Server.Models;
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Mvc;
 
+[assembly: InternalsVisibleTo("Server.UnitTest")]
 namespace Server.Controllers;
 
 public static class StuffRouteHandlers
 {
-    public static RouteGroupBuilder Map(RouteGroupBuilder group)
+    public static IEndpointRouteBuilder MapStuffEndpoints(this IEndpointRouteBuilder builder)
     {
-        group.MapGet("", GetListAsync);
-        group.MapPost("", CreateAsync);
-        group.MapGet("{id}", ReadAsync);
-        group.MapPut("{id}", UpdateAsync);
-        group.MapDelete("{id}", DeleteAsync);
-        return group;
+        builder.MapGet("", GetListAsync);
+        builder.MapPost("", CreateAsync);
+        builder.MapGet("{id}", ReadAsync);
+        builder.MapPut("{id}", UpdateAsync);
+        builder.MapDelete("{id}", DeleteAsync);
+        return builder;
     }
 
-    private static async Task<IResult> GetListAsync(int? page, string search, IStuffService stuffService)
+    internal static async Task<IResult> GetListAsync(
+        [FromQuery] int? page,
+        [FromQuery] string search,
+        [FromServices] IStuffService stuffService)
     {
         StuffModel result = string.IsNullOrWhiteSpace(search)
             ? await stuffService.GetListAsync(page ?? 0)
@@ -23,25 +29,34 @@ public static class StuffRouteHandlers
         return Results.Ok(result);
     }
 
-    private static async Task<IResult> CreateAsync(DatumModel input, IStuffService stuffService)
+    internal static async Task<IResult> CreateAsync(
+        [FromBody] DatumModel input,
+        [FromServices] IStuffService stuffService)
     {
         DatumModel result = await stuffService.CreateAsync(input);
         return Results.Created($"{result.Id}", result);
     }
 
-    private static async Task<IResult> ReadAsync(Guid id, IStuffService stuffService)
+    internal static async Task<IResult> ReadAsync(
+        [FromRoute] Guid id,
+        [FromServices] IStuffService stuffService)
     {
         DatumModel result = await stuffService.ReadAsync(id);
         return Results.Ok(result);
     }
 
-    private static async Task<IResult> UpdateAsync(Guid id, DatumModel input, IStuffService stuffService)
+    internal static async Task<IResult> UpdateAsync(
+        [FromRoute] Guid id,
+        [FromBody] DatumModel input,
+        [FromServices] IStuffService stuffService)
     {
         DatumModel result = await stuffService.UpdateAsync(id, input);
         return Results.Ok(result);
     }
 
-    private static async Task<IResult> DeleteAsync(Guid id, IStuffService stuffService)
+    internal static async Task<IResult> DeleteAsync(
+        [FromRoute] Guid id,
+        [FromServices] IStuffService stuffService)
     {
         await stuffService.DeleteAsync(id);
         return Results.NoContent();
