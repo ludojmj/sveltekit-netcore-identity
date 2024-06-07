@@ -7,8 +7,9 @@ import { apiErrMsg, crud } from '$lib/const.js';
 
 const apiUri = import.meta.env.VITE_API_URL;
 const isSelfHostedClient = apiUri.indexOf('http') < 0;
-const rootApi = isSelfHostedClient ? `${window.location}${apiUri}` : apiUri;
+const rootApi = isSelfHostedClient ? `${window.location.origin}/${apiUri}` : apiUri;
 const isMock = rootApi.indexOf('mock') > -1;
+
 const axiosCallAsync = async (params) => {
   isLoading.set(true);
   try {

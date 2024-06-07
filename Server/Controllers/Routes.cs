@@ -9,7 +9,8 @@ public static class Routes
 
     public static IEndpointRouteBuilder MapRoutes(this IEndpointRouteBuilder builder)
     {
-        var api = builder.MapGroup("/api").RequireAuthorization().AddEndpointFilter<TraceEndpointFilter>();
+        var api = builder.MapGroup("api").RequireAuthorization().AddEndpointFilter<TraceEndpointFilter>();
+
         api.MapGroup(CstStuff).WithTags(CstStuff).MapStuffEndpoints();
         api.MapGroup(CstUser).WithTags(CstUser).MapUserEndpoints();
         return builder;

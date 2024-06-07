@@ -10,11 +10,11 @@ public static class UserRouteHandlers
 {
     public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder builder)
     {
-        builder.MapGet("/", GetListAsync);
-        builder.MapPost("/", CreateAsync);
-        builder.MapGet("/{id}", ReadAsync);
-        builder.MapPut("/{id}", UpdateAsync);
-        builder.MapDelete("/{id}", DeleteAsync);
+        builder.MapGet("", GetListAsync);
+        builder.MapPost("", CreateAsync);
+        builder.MapGet("{id}", ReadAsync);
+        builder.MapPut("{id}", UpdateAsync);
+        builder.MapDelete("{id}", DeleteAsync);
         return builder;
     }
 
