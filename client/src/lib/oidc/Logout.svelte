@@ -5,13 +5,11 @@
 </script>
 
 {#if $tokens}
-  <button class="btn btn-danger" on:click={async () => await logoutAsync()}>
-    <span>
-      Logout &nbsp;
+  <button class="button is-danger" on:click={logoutAsync}>
+    Logout &nbsp;
 
-      <span class="badge bg-primary">
-        {$tokens.accessTokenPayload.name}
-      </span>
+    <span class="tag is-rounded">
+      {$tokens.accessTokenPayload.name}
     </span>
   </button>
 {/if}

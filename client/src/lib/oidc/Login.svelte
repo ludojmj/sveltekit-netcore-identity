@@ -6,17 +6,15 @@
 </script>
 
 {#if !$tokens}
-  <main class="container text-center">
-    <div class="row">
-      <div class="col">
-        <Logo />
-      </div>
-      <div class="col">
-        <h1 class="title">sveltekit-netcore-identity</h1>
-      </div>
-      <div class="col">
-        <button class="btn btn-primary" on:click={async () => await loginAsync()}> Login </button>
-      </div>
+  <div class="columns is-tablet">
+    <div class="column">
+      <Logo />
     </div>
-  </main>
+    <div class="column">
+      <h1 class="title">sveltekit-netcore-identity</h1>
+    </div>
+    <div class="column has-text-right">
+      <button class="button is-info" on:click={loginAsync}> Login </button>
+    </div>
+  </div>
 {/if}

@@ -7,8 +7,6 @@
   import List from '$lib/common/List.svelte';
   import Error from '$lib/common/Error.svelte';
   import Loading from '$lib/common/Loading.svelte';
-  import Logo from '$lib/common/Logo.svelte';
-  import Logout from '$lib/oidc/Logout.svelte';
 
   let searchTerm = '';
   let stuff = {};
@@ -47,62 +45,63 @@
   <Loading />
 {:else}
   <form on:submit|preventDefault={handleSearch}>
-    <div class="row">
-      <div class="col">
-        <button type="reset" class="btn" on:click={handleReset}>
-          <Logo />
-        </button>
-      </div>
-      <div class="col">
-        <div class="input-group">
-          <input
-            bind:value={searchTerm}
-            use:init
-            class="form-control"
-            type="search"
-            placeholder="Filter"
-            aria-label="Filter"
-            maxLength="20"
-          />
-          <button class="btn btn-outline-secondary" type="submit">Search</button>
+    <div class="columns">
+      <div class="column">
+        <div class="field has-addons">
+          <div class="control has-icons-right">
+            <input
+              bind:value={searchTerm}
+              use:init
+              class="input"
+              type="search"
+              placeholder="Filter"
+              aria-label="Filter"
+              maxLength="20"
+            />
+            <span class="icon is-right">
+              <i on:click={handleReset} on:keydown={handleReset} class="delete" tabindex="0" role="button" />
+            </span>
+          </div>
         </div>
       </div>
-      <div class="col">
-        <ul class="pagination">
-          <li class="page-item">
-            <button
-              class="btn btn-primary"
-              value="-"
-              on:click|preventDefault={handlePage}
-              disabled={!stuff.page || stuff.page === 1}
-            >
-              &laquo;
-            </button>
-          </li>
-          <li class="page-item">
-            <div class="form-control">
-              Page {stuff.page ? stuff.page : 0}/{stuff.totalPages ? stuff.totalPages : 0}
-            </div>
-          </li>
-          <li class="page-item">
-            <button
-              class="btn btn-primary"
-              value="+"
-              on:click|preventDefault={handlePage}
-              disabled={stuff.page === stuff.totalPages}
-            >
-              &raquo;
-            </button>
-          </li>
-        </ul>
+      <div class="column">
+        <button class="button is-secondary" type="submit">Search</button>
       </div>
-      <div class="col">
-        <a href={`/${crud.CREATE}`} class="btn btn-success">
+      <div class="column">
+        <a href={`/${crud.CREATE}`} class="button is-success">
           {crud.CREATE}
         </a>
       </div>
-      <div class="col">
-        <Logout />
+      <div class="column has-text-right">
+        <div class="pagination">
+          <ul class="pagination-list">
+            <li>
+              <button
+                class="button is-primary"
+                value="-"
+                on:click|preventDefault={handlePage}
+                disabled={!stuff.page || stuff.page === 1}
+              >
+                &laquo;
+              </button>
+            </li>
+            <li>
+              <div class="field">
+                Page {stuff.page ? stuff.page : 0}/{stuff.totalPages ? stuff.totalPages : 0}
+              </div>
+            </li>
+            <li>
+              <button
+                class="button is-primary"
+                value="+"
+                on:click|preventDefault={handlePage}
+                disabled={stuff.page === stuff.totalPages}
+              >
+                &raquo;
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </form>

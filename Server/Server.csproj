@@ -13,16 +13,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.6" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AspNetCoreAnalyzers" Version="0.3.0" />
-    <PackageReference Include="Moq.Analyzers" Version="0.1.0" />
-    <PackageReference Include="Meziantou.Analyzer" Version="2.0.155" />
+    <PackageReference Include="Moq.Analyzers" Version="0.1.1" />
+    <PackageReference Include="Meziantou.Analyzer" Version="2.0.163" />
     <PackageReference Include="Roslynator.Analyzers" Version="4.12.4" />
     <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.12.4" />
   </ItemGroup>

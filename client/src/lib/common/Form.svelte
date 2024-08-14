@@ -36,24 +36,24 @@
 {:else if $isLoading || !stuffDatum}
   <Loading />
 {:else}
-  <form class="alert alert-secondary" on:submit|preventDefault={handleSubmitAsync}>
+  <form class="panel is-secondary" on:submit|preventDefault={handleSubmitAsync}>
     <header
-      class="modal-header alert
-        {(crudTitle === crud.CREATE && 'alert-success') ||
-        (crudTitle === crud.READ && 'alert-dark') ||
-        (crudTitle === crud.UPDATE && 'alert-warning') ||
-        (crudTitle === crud.DELETE && 'alert-danger')}"
+      class="panel-heading
+        {(crudTitle === crud.CREATE && 'is-success') ||
+        (crudTitle === crud.READ && 'is-dark') ||
+        (crudTitle === crud.UPDATE && 'is-warning') ||
+        (crudTitle === crud.DELETE && 'is-danger')}"
     >
-      <h5 class="modal-title">
+      <h5>
         {crudTitle}
       </h5>
-      <a href="/" class="btn-close">.</a>
+      <a href="/" class="delete">.</a>
     </header>
 
-    <label class="form-label" for="user">Owner:</label>
+    <label class="label" for="user">Owner:</label>
     <input
       on:keyup|preventDefault={handleEscape}
-      class="form-control fw-bold"
+      class="input has-text-weight-bold"
       type="text"
       id="user"
       name="user"
@@ -62,7 +62,7 @@
       disabled
     />
 
-    <label class="form-label" for="label">Label:</label>
+    <label class="label" for="label">Label:</label>
     <input
       on:keyup|preventDefault={handleEscape}
       bind:value={stuffDatum.label}
@@ -70,25 +70,25 @@
       minlength="3"
       maxlength="80"
       required
-      class="form-control"
+      class="input"
       type="text"
       maxLength="79"
       placeholder="Label"
       {disabled}
     />
 
-    <label class="form-label" for="description">Description:</label>
+    <label class="label" for="description">Description:</label>
     <input
       on:keyup|preventDefault={handleEscape}
       bind:value={stuffDatum.description}
-      class="form-control"
+      class="input"
       type="text"
       maxLength="79"
       placeholder="Description"
       {disabled}
     />
 
-    <label class="form-label" for="otherInfo">Other info:</label>
+    <label class="label" for="otherInfo">Other info:</label>
     <textarea
       on:keyup|preventDefault={handleEscape}
       bind:value={stuffDatum.otherInfo}
@@ -100,8 +100,8 @@
     />
 
     <footer>
-      <a href="/" class="btn btn-danger">Cancel</a>
-      <button class="btn btn-success" type="submit">Confirm</button>
+      <a href="/" class="button is-danger">Cancel</a>
+      <button class="button is-success" type="submit">Confirm</button>
     </footer>
 
     <Error msgErr={error} hasReset={false} on:click={() => (error = '')} />

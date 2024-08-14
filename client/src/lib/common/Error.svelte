@@ -8,12 +8,13 @@
 </script>
 
 {#if msgErr}
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <div class="notification is-danger is-light">
     {msgErr}
+    <button class="delete" on:click />
     {#if hasReset}
-      <a href="/" class="btn btn-warning">Reset</a>
-    {:else}
-      <button class="btn btn-warning" type="button" on:click>Close</button>
+      <a href="/" class="button is-warning">Reset</a>
+      {:else}
+      <button class="button is-warning" type="button" on:click>Close</button>
     {/if}
   </div>
 {/if}

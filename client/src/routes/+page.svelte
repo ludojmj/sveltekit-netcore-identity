@@ -6,5 +6,7 @@
 
 <section class="section">
   <CrudManager />
+</section>
+<section class="section">
   <pre>{JSON.stringify($tokens, null, '\t')}</pre>
 </section>

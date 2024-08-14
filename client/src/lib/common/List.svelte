@@ -5,7 +5,7 @@
   export let stuff;
 </script>
 
-<table class="table table-striped table-hover" summary="List of stuff">
+<table class="table is-striped is-hoverable" summary="List of stuff">
   <caption>.List of stuff</caption>
   <thead>
     <tr>
@@ -43,14 +43,14 @@
           </code>
         </td>
         <td>
-          <a href={`/${stuffDatum.id}/${crud.READ}`} class="btn btn-secondary">{crud.READ}</a>
+          <a href={`/${stuffDatum.id}/${crud.READ}`} class="button is-secondary">{crud.READ}</a>
         </td>
         {#if stuffDatum.user.id === $tokens.idTokenPayload.sub}
           <td>
-            <a href={`/${stuffDatum.id}/${crud.UPDATE}`} class="btn btn-warning">{crud.UPDATE}</a>
+            <a href={`/${stuffDatum.id}/${crud.UPDATE}`} class="button is-warning">{crud.UPDATE}</a>
           </td>
           <td>
-            <a href={`/${stuffDatum.id}/${crud.DELETE}`} class="btn btn-danger">{crud.DELETE}</a>
+            <a href={`/${stuffDatum.id}/${crud.DELETE}`} class="button is-danger">{crud.DELETE}</a>
           </td>
         {:else}
           <td colspan="2">

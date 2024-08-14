@@ -1,3 +1,30 @@
+$primary: #cfe2ff;
+$info: #3c5172;
+$success: #99f7ab;
+$warning: #ffbd00;
+$danger: #f25757;
+$link: #000;
+$title-color: $info;
+@import 'node_modules/bulma/sass/_index';
+
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+input:valid,
+select:valid,
+textarea:valid {
+  border-color: $success;
+}
+
+input:invalid,
+select:invalid {
+  border-color: $danger;
+}
+
+
 table {
   table-layout: fixed;
 }
@@ -35,5 +62,3 @@ textarea {
     font-weight: bold;
   }
 }
-
-@import '../node_modules/bootstrap/scss/bootstrap.scss';
