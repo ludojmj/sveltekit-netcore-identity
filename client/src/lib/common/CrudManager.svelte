@@ -65,7 +65,7 @@
         </div>
       </div>
       <div class="column">
-        <button class="button is-secondary" type="submit">Search</button>
+        <button class="button is-primary" type="submit">Search</button>
       </div>
       <div class="column">
         <a href={`/${crud.CREATE}`} class="button is-success">

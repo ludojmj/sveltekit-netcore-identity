@@ -19,3 +19,4 @@
 **/.eslintcache
 **/coverage.json
 **/lcov.info
+.fake

@@ -4,7 +4,7 @@
   import CrudManager from '$lib/common/CrudManager.svelte';
 </script>
 
-<section class="section">
+<section class="section has-text-center">
   <CrudManager />
 </section>
 <section class="section">
