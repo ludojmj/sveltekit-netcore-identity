@@ -3,11 +3,12 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { isLoading } from '$lib/store.js';
-  import { crud } from '../const.js';
+  import { crud } from '$lib/const.js';
   import { crudApiCallAsync, getItemAsync } from '$lib/api.js';
   import { handleEscape, handleFormError, setFocus } from '$lib/tools.js';
   import Error from '$lib/common/Error.svelte';
   import Loading from '$lib/common/Loading.svelte';
+
   export let crudTitle, disabled;
 
   const id = $page.params.id;

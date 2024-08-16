@@ -11,9 +11,9 @@
   <a href={`/${stuffDatum.id}/${crud.UPDATE}`} class="button is-small is-warning">{crud.UPDATE}</a>
   <a href={`/${stuffDatum.id}/${crud.DELETE}`} class="button is-small is-danger">{crud.DELETE}</a>
 {:else}
-  Owned by:
-  <code>
+  <i class="is-size-7 has-background-danger-light">
+    Owned by:
     {stuffDatum.user.givenName}
     {stuffDatum.user.familyName}
-  </code>
+  </i>
 {/if}

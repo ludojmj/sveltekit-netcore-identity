@@ -1,6 +1,6 @@
 // oidc.js
 import { browser } from '$app/environment';
-import { OidcClient, TokenAutomaticRenewMode } from '@axa-fr/oidc-client';
+import { OidcClient, TokenAutomaticRenewMode, TokenRenewMode } from '@axa-fr/oidc-client';
 import { isAuthLoading, tokens } from '$lib/store.js';
 
 let ori = '.';
@@ -18,8 +18,8 @@ const configuration = {
   authority: 'https://demo.duendesoftware.com',
   service_worker_relative_url: '/OidcServiceWorker.js',
   service_worker_only: false,
-  token_renew_mode: 'access_token_invalid',
-  token_automatic_renew_mode: TokenAutomaticRenewMode.AutomaticOnlyWhenFetchExecuted
+  token_renew_mode: TokenRenewMode.access_token_invalid,
+  token_automatic_renew_mode: TokenAutomaticRenewMode.AutomaticOnlyWhenFetchExecuted,
 };
 
 const vanillaOidc = OidcClient.getOrCreate(() => fetch)(configuration);

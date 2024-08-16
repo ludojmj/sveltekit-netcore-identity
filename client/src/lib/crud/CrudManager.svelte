@@ -4,7 +4,7 @@
   import { crud } from '$lib/const.js';
   import { isLoading } from '$lib/store.js';
   import { apiGetStuffListAsync, apiSearchStuffAsync, apiGotoPageAsync } from '$lib/api.js';
-  import List from '$lib/common/List.svelte';
+  import List from '$lib/crud/List.svelte';
   import Error from '$lib/common/Error.svelte';
   import Loading from '$lib/common/Loading.svelte';
 
