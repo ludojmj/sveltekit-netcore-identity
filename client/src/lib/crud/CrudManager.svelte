@@ -23,6 +23,16 @@
     stuff = await apiGetStuffListAsync();
   };
 
+  const handleEscapeOrEnter = (event) => {
+    if (event.code == 'Escape') {
+      handleReset();
+    }
+
+    if (event.code == 'Enter' || event.code == 'NumpadEnter') {
+      handleSearch();
+    }
+  };
+
   const handleSearch = async () => {
     if (searchTerm) {
       stuff = await apiSearchStuffAsync(searchTerm);
@@ -44,66 +54,78 @@
 {:else if $isLoading || !stuff.datumList}
   <Loading />
 {:else}
-  <form on:submit|preventDefault={handleSearch}>
-    <div class="columns">
-      <div class="column">
-        <div class="field has-addons">
-          <div class="control has-icons-right">
-            <input
-              bind:value={searchTerm}
-              use:init
-              class="input"
-              type="search"
-              placeholder="Filter"
-              aria-label="Filter"
-              maxLength="20"
-            />
-            <span class="icon is-right">
-              <i on:click={handleReset} on:keydown={handleReset} class="delete" tabindex="0" role="button" />
-            </span>
+  <div class="box has-background-primary">
+    <form on:submit|preventDefault={handleSearch}>
+      <div class="columns">
+        <div class="column is-4">
+          <div class="pagination">
+            <ul class="pagination-list">
+              <li>
+                <button
+                  class="button is-primary-light"
+                  value="-"
+                  on:click|preventDefault={handlePage}
+                  disabled={!stuff.page || stuff.page === 1}
+                >
+                  &laquo;
+                </button>
+              </li>
+              <li>
+                <div class="field">
+                  Page {stuff.page ? stuff.page : 0}/{stuff.totalPages ? stuff.totalPages : 0}
+                </div>
+              </li>
+              <li>
+                <button
+                  class="button is-primary-light"
+                  value="+"
+                  on:click|preventDefault={handlePage}
+                  disabled={stuff.page === stuff.totalPages}
+                >
+                  &raquo;
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
-      </div>
-      <div class="column">
-        <button class="button is-primary" type="submit">Search</button>
-      </div>
-      <div class="column">
-        <a href={`/${crud.CREATE}`} class="button is-success">
-          {crud.CREATE}
-        </a>
-      </div>
-      <div class="column has-text-right">
-        <div class="pagination">
-          <ul class="pagination-list">
-            <li>
-              <button
-                class="button is-primary"
-                value="-"
-                on:click|preventDefault={handlePage}
-                disabled={!stuff.page || stuff.page === 1}
-              >
-                &laquo;
-              </button>
-            </li>
-            <li>
-              <div class="field">
-                Page {stuff.page ? stuff.page : 0}/{stuff.totalPages ? stuff.totalPages : 0}
-              </div>
-            </li>
-            <li>
-              <button
-                class="button is-primary"
-                value="+"
-                on:click|preventDefault={handlePage}
-                disabled={stuff.page === stuff.totalPages}
-              >
-                &raquo;
-              </button>
-            </li>
-          </ul>
+
+        <div class="column is-6">
+          <div class="field has-addons">
+            <div class="control has-icons-right">
+              <input
+                bind:value={searchTerm}
+                use:init
+                on:keyup|preventDefault={handleEscapeOrEnter}
+                class="input"
+                type="search"
+                placeholder="Filter"
+                aria-label="Filter"
+                maxLength="20"
+              />
+              <span class="icon is-right">
+                <i
+                  on:click={handleReset}
+                  on:keydown={handleReset}
+                  class="delete"
+                  tabindex="0"
+                  role="button"
+                />
+              </span>
+            </div>
+            <div class="control">
+              <button class="button is-primary" type="submit">Search</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-2">
+          <a href={`/${crud.CREATE}`} class="button is-success">
+            {crud.CREATE}
+          </a>
         </div>
       </div>
-    </div>
-  </form>
-  <List {stuff} />
+    </form>
+
+    <List {stuff} />
+  </div>
 {/if}

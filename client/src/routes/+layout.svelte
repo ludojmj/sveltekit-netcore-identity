@@ -14,8 +14,6 @@
 <div class="container">
   <AuthWrapper>
     <Header />
-    <article class="panel">
-      <slot />
-    </article>
+    <slot />
   </AuthWrapper>
 </div>

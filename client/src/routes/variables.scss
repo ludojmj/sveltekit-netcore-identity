@@ -23,3 +23,7 @@ input:invalid,
 select:invalid {
   border-color: $danger;
 }
+
+.enable-line-break {
+  overflow-wrap: break-word;
+}

@@ -4,11 +4,8 @@
   import CrudManager from '$lib/crud/CrudManager.svelte';
 </script>
 
-<section class="section has-text-center">
-  <CrudManager />
-</section>
+<CrudManager />
+
 {#if false}
-  <section class="section">
-    <pre>{JSON.stringify($tokens, null, '\t')}</pre>
-  </section>
+  <pre>{JSON.stringify($tokens, null, '\t')}</pre>
 {/if}
