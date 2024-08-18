@@ -1,6 +1,6 @@
 // oidc.js
 import { browser } from '$app/environment';
-import { OidcClient, TokenAutomaticRenewMode, TokenRenewMode } from '@axa-fr/oidc-client';
+import { OidcClient, TokenRenewMode } from '@axa-fr/oidc-client';
 import { isAuthLoading, tokens } from '$lib/store.js';
 
 let ori = '.';
