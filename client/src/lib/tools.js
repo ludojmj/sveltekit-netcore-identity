@@ -1,6 +1,5 @@
 // tools.js
 import { goto } from '$app/navigation';
-import { get } from 'svelte/store';
 import { crud } from '$lib/const.js';
 
 export const setFocus = (elt) => {

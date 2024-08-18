@@ -6,6 +6,4 @@
 
 <CrudManager />
 
-{#if false}
-  <pre>{JSON.stringify($tokens, null, '\t')}</pre>
-{/if}
+<pre class="is-hidden">{JSON.stringify($tokens, null, '\t')}</pre>

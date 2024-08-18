@@ -18,31 +18,31 @@
     el.focus();
   };
 
-  const handleReset = async () => {
+  const handleResetAsync = async () => {
     searchTerm = '';
     stuff = await apiGetStuffListAsync();
   };
 
-  const handleEscapeOrEnter = (event) => {
+  const handleEscapeOrEnterAsync = async (event) => {
     if (event.code == 'Escape') {
-      handleReset();
+      handleResetAsync();
     }
 
     if (event.code == 'Enter' || event.code == 'NumpadEnter') {
-      handleSearch();
+      handleSearchAsync();
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearchAsync = async () => {
     if (searchTerm) {
       stuff = await apiSearchStuffAsync(searchTerm);
       return;
     }
 
-    handleReset();
+    handleResetAsync();
   };
 
-  const handlePage = async (event) => {
+  const handlePageAsync = async (event) => {
     searchTerm = '';
     const page = event.currentTarget.value === '+' ? stuff.page + 1 : stuff.page - 1;
     stuff = await apiGotoPageAsync(page);
@@ -50,36 +50,36 @@
 </script>
 
 {#if stuff.error}
-  <Error msgErr={stuff.error} hasReset={false} />
+  <Error msgErr={stuff.error} hasReset={true} />
 {:else if $isLoading || !stuff.datumList}
   <Loading />
 {:else}
-  <div class="box has-background-primary">
-    <form on:submit|preventDefault={handleSearch}>
+  <section class="box has-background-primary">
+    <form on:submit|preventDefault={handleSearchAsync}>
       <div class="columns">
         <div class="column is-4">
           <div class="pagination">
             <ul class="pagination-list">
               <li>
                 <button
-                  class="button is-primary-light"
+                  class="button is-info"
                   value="-"
-                  on:click|preventDefault={handlePage}
+                  on:click|preventDefault={handlePageAsync}
                   disabled={!stuff.page || stuff.page === 1}
                 >
                   &laquo;
                 </button>
               </li>
               <li>
-                <div class="field">
+                <div class="input field">
                   Page {stuff.page ? stuff.page : 0}/{stuff.totalPages ? stuff.totalPages : 0}
                 </div>
               </li>
               <li>
                 <button
-                  class="button is-primary-light"
+                  class="button is-info"
                   value="+"
-                  on:click|preventDefault={handlePage}
+                  on:click|preventDefault={handlePageAsync}
                   disabled={stuff.page === stuff.totalPages}
                 >
                   &raquo;
@@ -95,7 +95,7 @@
               <input
                 bind:value={searchTerm}
                 use:init
-                on:keyup|preventDefault={handleEscapeOrEnter}
+                on:keyup|preventDefault={handleEscapeOrEnterAsync}
                 class="input"
                 type="search"
                 placeholder="Filter"
@@ -104,8 +104,8 @@
               />
               <span class="icon is-right">
                 <i
-                  on:click={handleReset}
-                  on:keydown={handleReset}
+                  on:click={handleResetAsync}
+                  on:keydown={handleResetAsync}
                   class="delete"
                   tabindex="0"
                   role="button"
@@ -113,7 +113,7 @@
               </span>
             </div>
             <div class="control">
-              <button class="button is-primary" type="submit">Search</button>
+              <button class="button is-info" type="submit">Search</button>
             </div>
           </div>
         </div>
@@ -125,7 +125,8 @@
         </div>
       </div>
     </form>
-
+  </section>
+  <section class="box has-background-primary">
     <List {stuff} />
-  </div>
+  </section>
 {/if}

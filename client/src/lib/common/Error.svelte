@@ -10,11 +10,10 @@
 {#if msgErr}
   <div class="notification is-danger is-light">
     {msgErr}
-    <button class="delete" on:click />
     {#if hasReset}
-      <a href="/" class="button is-warning">Reset</a>
-      {:else}
-      <button class="button is-warning" type="button" on:click>Close</button>
+      <a data-sveltekit-reload href="/" class="delete"> </a>
+    {:else}
+      <button class="delete" on:click />
     {/if}
   </div>
 {/if}

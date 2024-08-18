@@ -6,11 +6,15 @@
 
 <div class="columns is-tablet">
   <div class="column">
-    <Logo />
+    <a data-sveltekit-reload href="/" class="navbar-item">
+      <Logo />
+    </a>
   </div>
+
   <div class="column">
     <h1 class="title">sveltekit-netcore-identity</h1>
   </div>
+
   <div class="column has-text-right">
     <Logout />
   </div>
