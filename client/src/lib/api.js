@@ -99,15 +99,11 @@ const getErrorMsg = (error) => {
   if (error.response?.status === 401) {
     return apiErrMsg.unauthorized;
   }
+
   if (error.response?.data?.detail) {
     return error.response.data.detail;
   }
-  if (error.message) {
-    return error.message;
-  }
-  if (error) {
-    return error;
-  }
+
   return msg;
 };
 

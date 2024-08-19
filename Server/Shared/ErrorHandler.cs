@@ -43,6 +43,7 @@ public class ErrorHandler(IHostEnvironment env, IProblemDetailsService problemDe
             }
         };
 
-        return await problemDetailsService.TryWriteAsync(result);
+        await problemDetailsService.WriteAsync(result);
+        return true;
     }
 }

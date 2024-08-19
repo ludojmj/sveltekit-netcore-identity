@@ -46,7 +46,7 @@ npm run dev
 
 ### >>>>> SQLite database
 
-#### Overwrite database if needed
+#### Overwrite database if needed (requires sqlite3)
 
 ```bash
 cd <myfolder>
