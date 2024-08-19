@@ -1,39 +1,29 @@
-table {
-  table-layout: fixed;
+$primary: #cfe2ff;
+$info: #3c5172;
+$success: #99f7ab;
+$warning: #ffbd00;
+$danger: #f25757;
+$link: #000;
+$title-color: $info;
+@import 'node_modules/bulma/sass/_index';
+
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
 }
 
-td {
-  white-space: normal !important;
-  word-wrap: break-word;
-  overflow: hidden;
+input:valid,
+select:valid,
+textarea:valid {
+  border-color: $success;
 }
 
-textarea {
-  overflow: hidden;
-  resize: none;
+input:invalid,
+select:invalid {
+  border-color: $danger;
 }
 
-@media screen and (max-width: 576px) {
-  .table thead {
-    display: none;
-    border: none;
-  }
-
-  .table tr {
-    display: block;
-  }
-
-  .table td {
-    display: block;
-    text-align: right;
-    border: none;
-  }
-
-  .table td:before {
-    content: attr(data-label);
-    float: left !important;
-    font-weight: bold;
-  }
+.enable-line-break {
+  overflow-wrap: break-word;
 }
-
-@import '../node_modules/bootstrap/scss/bootstrap.scss';

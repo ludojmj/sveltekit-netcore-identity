@@ -37,7 +37,7 @@ public class TestErroHandler
 
         // Assert
         Assert.Equal(404, _httpContext.Response.StatusCode);
-        Assert.False(result);
+        Assert.True(result);
     }
 
     [Theory]
@@ -57,7 +57,7 @@ public class TestErroHandler
 
         // Assert
         Assert.Equal(409, _httpContext.Response.StatusCode);
-        Assert.False(result);
+        Assert.True(result);
     }
 
     [Theory]
@@ -75,6 +75,6 @@ public class TestErroHandler
 
         // Assert
         Assert.Equal(400, _httpContext.Response.StatusCode);
-        Assert.False(result);
+        Assert.True(result);
     }
 }

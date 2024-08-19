@@ -37,7 +37,7 @@ npm run dev
 - Svelte template client borrowed from: <https://kit.svelte.dev>
 - Identity service powered by: <https://demo.duendesoftware.com>
 - Identity client borrowed from: <https://github.com/AxaFrance/oidc-client>
-- CSS borrowed from: <https://getbootstrap.com>
+- CSS borrowed from: <https://bulma.io>
 - SVG borrowed from: <https://creativecommons.org>
 
 ---
@@ -46,7 +46,7 @@ npm run dev
 
 ### >>>>> SQLite database
 
-#### Overwrite database if needed
+#### Overwrite database if needed (requires sqlite3)
 
 ```bash
 cd <myfolder>

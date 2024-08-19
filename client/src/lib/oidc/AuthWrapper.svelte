@@ -11,13 +11,11 @@
   });
 </script>
 
-<main class="container">
-  <Login />
-  {#if $isAuthLoading}
-    <Loading />
-  {:else if $tokens}
-    <slot />
-  {:else}
-    <div class="alert alert-warning">You need to login to access this site.</div>
-  {/if}
-</main>
+<Login />
+{#if $isAuthLoading}
+  <Loading />
+{:else if $tokens}
+  <slot />
+{:else}
+  <div class="notification is-warning is-light">You need to login to access this site.</div>
+{/if}

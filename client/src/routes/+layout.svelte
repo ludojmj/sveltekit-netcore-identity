@@ -1,6 +1,7 @@
 <script>
   // +layout.svelte
   import AuthWrapper from '$lib/oidc/AuthWrapper.svelte';
+  import Header from '$lib/common/Header.svelte';
   import './variables.scss';
 </script>
 
@@ -10,6 +11,9 @@
   <meta name="keywords" content="SvelteKit .Net8 Identity" />
 </svelte:head>
 
-<AuthWrapper>
-  <slot />
-</AuthWrapper>
+<div class="container">
+  <AuthWrapper>
+    <Header />
+    <slot />
+  </AuthWrapper>
+</div>

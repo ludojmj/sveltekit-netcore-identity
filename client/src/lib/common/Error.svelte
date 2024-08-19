@@ -8,12 +8,12 @@
 </script>
 
 {#if msgErr}
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <div class="notification is-danger is-light">
     {msgErr}
     {#if hasReset}
-      <a href="/" class="btn btn-warning">Reset</a>
+      <a data-sveltekit-reload href="/" class="delete"> </a>
     {:else}
-      <button class="btn btn-warning" type="button" on:click>Close</button>
+      <button class="delete" on:click />
     {/if}
   </div>
 {/if}
