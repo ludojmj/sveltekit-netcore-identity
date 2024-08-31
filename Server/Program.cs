@@ -98,12 +98,8 @@ app.UseFileServer(new FileServerOptions
 });
 if (!env.IsProduction())
 {
-    app.UseSwagger(c =>
-        c.PreSerializeFilters.Add((swagger, httpReq) =>
-            swagger.Servers = [new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}" }]));
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Server V1");
         c.DisplayRequestDuration();
         c.EnableTryItOutByDefault();
     });
@@ -126,7 +122,8 @@ else
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapRoutes();
-app.MapFallbackToFile("/index.html");
+app.MapSwagger();
+app.MapFallbackToFile("index.html");
 app.MapHealthChecks("/health");
 
 await app.RunAsync();
