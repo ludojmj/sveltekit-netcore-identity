@@ -68,10 +68,10 @@ public class TestStuffService
         _dbContext.Database.EnsureCreated();
         var context = new DefaultHttpContext
         {
-            User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-            {
-                new(ClaimTypes.NameIdentifier, TestUserModel.Id)
-            }))
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, TestUserModel.Id)
+            ]))
         };
         var httpContext = Mock.Of<IHttpContextAccessor>(x => x.HttpContext == context);
         _stuffService = new StuffService(_dbContext, httpContext);

@@ -49,7 +49,7 @@ public class TestProgram
             foreach (var serviceDescriptor in serviceList!)
             {
                 var serviceType = serviceDescriptor.ServiceType;
-                if (!serviceType.FullName!.Contains("AF.Paiement"))
+                if (!serviceType.FullName!.Contains("Server", StringComparison.Ordinal))
                 {
                     continue;
                 }
