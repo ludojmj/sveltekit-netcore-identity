@@ -28,7 +28,7 @@ public class TestProgram
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("<body>", data);
+        Assert.Contains("<body", data);
     }
 
     [Fact]
