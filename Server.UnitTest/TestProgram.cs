@@ -23,12 +23,12 @@ public class TestProgram
         var client = app.CreateClient();
 
         // Act
-        var response = await client.GetAsync("/keep.txt");
+        var response = await client.GetAsync("/index.html");
         var data = await response.Content.ReadAsStringAsync();
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("OK", data);
+        Assert.Contains("<body>", data);
     }
 
     [Fact]
