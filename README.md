@@ -80,7 +80,6 @@ cd <myfolder>/Server.UnitTest
 dotnet restore
 dotnet build
 dotnet test
-dotnet test /p:CollectCoverage=true
 ```
 
 #### Run the Web API server
@@ -97,7 +96,7 @@ dotnet run
 
 ```bash
 cd <myfolder>
-npm create vite@latest client -- --template svelte
+npm create svelte@latest client
 ```
 
 #### Run the client App
