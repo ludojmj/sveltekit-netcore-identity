@@ -5,7 +5,15 @@ $warning: #ffbd00;
 $danger: #f25757;
 $link: #000;
 $title-color: $info;
-@import 'node_modules/bulma/sass/_index';
+
+@use "bulma/sass" with (
+  $primary: $primary,
+  $info: $info,
+  $success: $success,
+  $warning: $warning,
+  $danger: $danger,
+  $link: $link,
+  $title-color: $title-color);
 
 .navbar {
   position: fixed;

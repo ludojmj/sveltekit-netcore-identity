@@ -109,7 +109,7 @@
                   class="delete"
                   tabindex="0"
                   role="button"
-                />
+                ></i>
               </span>
             </div>
             <div class="control">
