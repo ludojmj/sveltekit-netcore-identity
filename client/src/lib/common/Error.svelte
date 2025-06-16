@@ -11,9 +11,9 @@
   <div class="notification is-danger is-light">
     {msgErr}
     {#if hasReset}
-      <a data-sveltekit-reload href="/" class="delete"> </a>
+      <a data-sveltekit-reload href="/" class="delete" aria-label="close"></a>
     {:else}
-      <button class="delete" on:click />
+      <button class="delete" aria-label="close" on:click></button>
     {/if}
   </div>
 {/if}

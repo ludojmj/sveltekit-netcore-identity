@@ -92,7 +92,7 @@
         maxLength="399"
         placeholder="Other info"
         {disabled}
-      />
+      ></textarea>
 
       <footer>
         <a href="/" class="button is-danger">Cancel</a>
