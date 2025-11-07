@@ -46,7 +46,7 @@ public class TestTraceEndpointFilter
         var context = Mock.Of<HttpContext>(x =>
             x.User == new ClaimsPrincipal(new ClaimsIdentity(Identity))
          && x.Features.Get<IEndpointFeature>() == endpoint
-         && x.Connection.RemoteIpAddress!.Equals(IPAddress.Parse("127.0.0.1"))
+         && x.Connection.RemoteIpAddress! == IPAddress.Parse("127.0.0.1")
         );
 
         var executingContext = Mock.Of<EndpointFilterInvocationContext>(x => x.HttpContext == context);
