@@ -12,18 +12,18 @@
     "postinstall": "node ./node_modules/@axa-fr/oidc-client/bin/copy-service-worker-files.mjs static"
   },
   "devDependencies": {
-    "@axa-fr/oidc-client": "^7.25.13",
-    "@sveltejs/adapter-static": "^3.0.8",
-    "axios": "^1.9.0",
+    "@axa-fr/oidc-client": "^7.26.0",
+    "@sveltejs/adapter-static": "^3.0.10",
+    "axios": "^1.13.2",
     "bulma": "^1.0.4",
-    "eslint": "^9.28.0",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-svelte": "^2.46.0",
-    "prettier": "^3.5.3",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-svelte": "^3.13.0",
+    "prettier": "^3.6.2",
     "prettier-plugin-svelte": "^3.4.0",
-    "sass": "1.89.2",
-    "svelte": "^5.33.19",
-    "vite": "^6.3.5"
+    "sass": "^1.93.3",
+    "svelte": "^5.43.4",
+    "vite": "^7.2.1"
   },
   "overrides": {
     "cookie": "^1.0.2"
