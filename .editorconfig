@@ -38,5 +38,8 @@ dotnet_diagnostic.MA0051.severity = none
 # MA0074: Use an overload of 'Contains' that has a StringComparison parameter
 dotnet_diagnostic.MA0074.severity = none
 
+# MA0169: Use Equals method instead of == or != operator
+dotnet_diagnostic.MA0169.severity = none
+
 # Moq1400: Explicitly choose a mocking behavior instead of relying on the default (Loose) behavior
 dotnet_diagnostic.Moq1400.severity = none
