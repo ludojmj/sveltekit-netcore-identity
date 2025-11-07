@@ -4,7 +4,6 @@ $success: #99f7ab;
 $warning: #ffbd00;
 $danger: #f25757;
 $link: #000;
-$title-color: $info;
 
 @use "bulma/sass" with (
   $primary: $primary,
@@ -13,7 +12,7 @@ $title-color: $info;
   $warning: $warning,
   $danger: $danger,
   $link: $link,
-  $title-color: $title-color);
+  $title-color: $info);
 
 .navbar {
   position: fixed;
