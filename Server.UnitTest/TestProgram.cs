@@ -23,8 +23,8 @@ public class TestProgram
         var client = app.CreateClient();
 
         // Act
-        var response = await client.GetAsync("/index.html");
-        var data = await response.Content.ReadAsStringAsync();
+        var response = await client.GetAsync("/index.html", TestContext.Current.CancellationToken);
+        var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

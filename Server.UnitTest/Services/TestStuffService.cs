@@ -70,7 +70,7 @@ public class TestStuffService
         {
             User = new ClaimsPrincipal(new ClaimsIdentity(
             [
-                new Claim(ClaimTypes.NameIdentifier, TestUserModel.Id)
+                new Claim("sub", TestUserModel.Id)
             ]))
         };
         var httpContext = Mock.Of<IHttpContextAccessor>(x => x.HttpContext == context);
@@ -82,9 +82,9 @@ public class TestStuffService
     public async Task StuffService_GetListAsync_ShouldReturn_Ok()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.AddAsync(_dbStuff);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.AddAsync(_dbStuff, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = await _stuffService.GetListAsync(1);
@@ -99,9 +99,9 @@ public class TestStuffService
     public async Task StuffService_GetListAsync_ShouldReturn_PageOne()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.AddAsync(_dbStuff);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.AddAsync(_dbStuff, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = await _stuffService.GetListAsync(2);
@@ -116,9 +116,9 @@ public class TestStuffService
     public async Task StuffService_SearchListAsync_ShouldReturn_Ok()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.AddAsync(_dbStuff);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.AddAsync(_dbStuff, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = await _stuffService.SearchListAsync("LABEL");
@@ -133,7 +133,7 @@ public class TestStuffService
     public async Task StuffService_SearchListAsync_ShouldThrow_BusinessException()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
         var dbStuffList = new List<TStuff>();
         for (int idx = 0; idx < 7; idx++)
         {
@@ -146,8 +146,8 @@ public class TestStuffService
             dbStuffList.Add(tmpStuff);
         }
 
-        await _dbContext.AddRangeAsync(dbStuffList);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddRangeAsync(dbStuffList, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = _stuffService.SearchListAsync("LABEL");
@@ -165,8 +165,8 @@ public class TestStuffService
     {
         // Arrange
         // Existing user
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = await _stuffService.CreateAsync(DatumModelTest);
@@ -199,8 +199,8 @@ public class TestStuffService
     {
         // Arrange
         DatumModelTest.Label = string.Empty;
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = _stuffService.CreateAsync(DatumModelTest);
@@ -220,9 +220,9 @@ public class TestStuffService
     public async Task StuffService_ReadAsync_ShouldReturn_Ok()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.AddAsync(_dbStuff);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.AddAsync(_dbStuff, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = await _stuffService.ReadAsync(DatumModelTest.Id);
@@ -254,9 +254,9 @@ public class TestStuffService
     public async Task StuffService_UpdateAsync_ShouldReturn_Ok()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.AddAsync(_dbStuff);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.AddAsync(_dbStuff, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = await _stuffService.UpdateAsync(DatumModelTest.Id, DatumModelTest);
@@ -316,9 +316,9 @@ public class TestStuffService
         // Arrange4
         _dbUser.UsrId = "2";
         _dbStuff.StfUserId = "2";
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.AddAsync(_dbStuff);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.AddAsync(_dbStuff, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         _dbUser.UsrId = "11";
 
         // Act4
@@ -340,13 +340,13 @@ public class TestStuffService
     public async Task StuffService_DeleteAsync_ShouldReturn_Ok()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.AddAsync(_dbStuff);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.AddAsync(_dbStuff, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         await _stuffService.DeleteAsync(IdTest);
-        var actual = await _dbContext.TStuffs.FirstOrDefaultAsync(x => x.StfId == "1");
+        var actual = await _dbContext.TStuffs.FirstOrDefaultAsync(x => x.StfId == "1", TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Null(actual);
@@ -371,9 +371,9 @@ public class TestStuffService
         // Arrange2
         _dbUser.UsrId = "2";
         _dbStuff.StfUserId = "2";
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.AddAsync(_dbStuff);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.AddAsync(_dbStuff, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         _dbUser.UsrId = "11";
 
         // Act2

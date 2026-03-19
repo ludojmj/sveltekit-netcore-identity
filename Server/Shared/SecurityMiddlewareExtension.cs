@@ -6,7 +6,6 @@ public static class SecurityMiddlewareExtension
     {
         app.Use(async (context, next) =>
         {
-            context.Response.Headers.Remove("Server");
             context.Response.Headers.Remove("X-Powered-By");
             context.Response.Headers.Append("Cache-Control", "no-cache, no-store, must-revalidate");
             context.Response.Headers.Append("Content-Security-Policy", "script-src 'self' 'unsafe-inline'; worker-src 'self' blob:; object-src 'none'; frame-ancestors 'self';");

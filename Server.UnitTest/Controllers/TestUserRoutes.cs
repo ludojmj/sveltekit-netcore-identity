@@ -17,11 +17,13 @@ public class TestUserRoutes
         FamilyName = "FamilyName",
         Email = "Email"
     };
+    private static readonly Task<UserModel> TestUserAsync = Task.FromResult(TestUser);
 
     private static readonly DirectoryModel TestDirectory = new()
     {
         UserList = [TestUser]
     };
+    private static readonly Task<DirectoryModel> TestDirectoryAsync = Task.FromResult(TestDirectory);
 
     // ***** ***** ***** LIST
     [Theory]
@@ -31,7 +33,7 @@ public class TestUserRoutes
     {
         // Arrange
         var mockService = Mock.Of<IUserService>(x =>
-            x.GetListAsync(page) == Task.FromResult(TestDirectory));
+            x.GetListAsync(page) == TestDirectoryAsync);
 
         // Act
         var result = await UserRouteHandlers.GetListAsync(page, string.Empty, mockService);
@@ -51,7 +53,7 @@ public class TestUserRoutes
     {
         // Arrange
         var mockService = Mock.Of<IUserService>(x =>
-            x.SearchListAsync("foo") == Task.FromResult(TestDirectory));
+            x.SearchListAsync("foo") == TestDirectoryAsync);
 
         // Act
         var result = await UserRouteHandlers.GetListAsync(page, "foo", mockService);
@@ -69,7 +71,7 @@ public class TestUserRoutes
     {
         // Arrange
         var mockService = Mock.Of<IUserService>(x =>
-            x.CreateAsync(TestUser) == Task.FromResult(TestUser));
+            x.CreateAsync(TestUser) == TestUserAsync);
 
         // Act
         var result = await UserRouteHandlers.CreateAsync(TestUser, mockService);
@@ -87,7 +89,7 @@ public class TestUserRoutes
     {
         // Arrange
         var mockService = Mock.Of<IUserService>(x =>
-            x.ReadAsync(It.IsAny<string>()) == Task.FromResult(TestUser));
+            x.ReadAsync(It.IsAny<string>()) == TestUserAsync);
 
         // Act
         var result = await UserRouteHandlers.ReadAsync(TestUser.Id, mockService);
@@ -121,7 +123,7 @@ public class TestUserRoutes
     {
         // Arrange
         var mockService = Mock.Of<IUserService>(x =>
-            x.UpdateAsync(It.IsAny<string>(), TestUser) == Task.FromResult(TestUser));
+            x.UpdateAsync(It.IsAny<string>(), TestUser) == TestUserAsync);
         string existingId = TestUser.Id;
 
         // Act

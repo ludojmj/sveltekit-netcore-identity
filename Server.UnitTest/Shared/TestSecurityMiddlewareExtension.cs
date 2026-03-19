@@ -58,12 +58,12 @@ public class TestSecurityMiddlewareExtension
                         });
                     });
             })
-            .StartAsync();
+            .StartAsync(TestContext.Current.CancellationToken);
 
         var server = host.GetTestServer();
         server.BaseAddress = new Uri("https://lost.com/health");
 
-        var context = await server.SendAsync(c => c.Request.Method = HttpMethods.Post);
+        var context = await server.SendAsync(c => c.Request.Method = HttpMethods.Post, TestContext.Current.CancellationToken);
 
         Assert.True(context.RequestAborted.CanBeCanceled);
         Assert.Equal(HttpProtocol.Http11, context.Request.Protocol);

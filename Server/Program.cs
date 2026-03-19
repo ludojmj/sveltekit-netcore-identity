@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Server.Controllers;
 using Server.DbModels;
 using Server.Services;
@@ -12,12 +12,12 @@ var conf = builder.Configuration;
 var env = builder.Environment;
 
 // Add services to the container.
+builder.WebHost.ConfigureKestrel(serverOptions => serverOptions.AddServerHeader = false);
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ErrorHandler>();
 builder.Services.AddHealthChecks();
 builder.Services.AddCors();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConfiguration(conf.GetSection("Logging")));
 builder.Services.AddApplicationInsightsTelemetry();
 
@@ -50,6 +50,7 @@ builder.Services.AddHttpsRedirection(options =>
 });
 
 // Register the Swagger generator
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Server", Version = "v1" });
@@ -62,19 +63,9 @@ builder.Services.AddSwaggerGen(c =>
         In = ParameterLocation.Header,
         Description = "JWT Authorization header using the Bearer scheme."
     });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    c.AddSecurityRequirement(d => new OpenApiSecurityRequirement
     {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = JwtBearerDefaults.AuthenticationScheme
-                }
-            },
-            Array.Empty<string>()
-        }
+        [new OpenApiSecuritySchemeReference(JwtBearerDefaults.AuthenticationScheme, d)] = []
     });
 });
 
@@ -85,26 +76,7 @@ builder.Services.AddScoped<IStuffService, StuffService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseHttpHeaders();
 app.UseExceptionHandler(_ => { });
-app.UseHsts();
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseFileServer(new FileServerOptions
-{
-    EnableDirectoryBrowsing = false,
-    EnableDefaultFiles = true,
-    DefaultFilesOptions = { DefaultFileNames = { "index.html" } }
-});
-if (!env.IsProduction())
-{
-    app.UseSwaggerUI(c =>
-    {
-        c.DisplayRequestDuration();
-        c.EnableTryItOutByDefault();
-    });
-}
-
 if (env.IsDevelopment())
 {
     app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
@@ -119,11 +91,32 @@ else
     );
 }
 
+app.UseHttpHeaders();
+app.UseHsts();
+app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+if (!env.IsProduction())
+{
+    app.UseSwaggerUI(c =>
+    {
+        c.DisplayRequestDuration();
+        c.EnableTryItOutByDefault();
+    });
+}
+
 app.MapRoutes();
 app.MapSwagger();
-app.MapFallbackToFile("index.html");
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health").AllowAnonymous();
+app.MapFallbackToFile("/index.html");
 
 await app.RunAsync();
+
+public partial class Program
+{
+    protected Program()
+    {
+    }
+}
+

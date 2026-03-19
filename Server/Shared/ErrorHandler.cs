@@ -4,10 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Server.Shared;
 
-public class ErrorHandler(IHostEnvironment env, IProblemDetailsService problemDetailsService) : IExceptionHandler
+public class ErrorHandler(ILogger<ErrorHandler> logger, IHostEnvironment env, IProblemDetailsService problemDetailsService) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
+        logger.LogCritical(exception, "ERROR");
         bool showRealError = true;
         switch (exception)
         {
