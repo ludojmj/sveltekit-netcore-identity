@@ -214,14 +214,13 @@ function checkDomain(domains, endpoint) {
     return;
   }
   const domain = domains.find((domain2) => {
-    var _a;
     let testable;
     if (typeof domain2 === "string") {
       testable = new RegExp(`^${domain2}`);
     } else {
       testable = domain2;
     }
-    return (_a = testable.test) == null ? void 0 : _a.call(testable, endpoint);
+    return testable.test?.(endpoint);
   });
   if (!domain) {
     throw new Error(
@@ -236,7 +235,6 @@ const getDomains = (trustedDomain, type) => {
   return trustedDomain[`${type}Domains`] ?? trustedDomain.domains ?? [];
 };
 const getCurrentDatabaseDomain = (database2, url, trustedDomains2) => {
-  var _a;
   if (url.endsWith(openidWellknownUrlEndWith)) {
     return null;
   }
@@ -264,7 +262,7 @@ const getCurrentDatabaseDomain = (database2, url, trustedDomains2) => {
         if (typeof domain === "string") {
           domain = new RegExp(`^${domain}`);
         }
-        if ((_a = domain.test) == null ? void 0 : _a.call(domain, url)) {
+        if (domain.test?.(url)) {
           hasToSendToken = true;
           break;
         }
@@ -490,7 +488,7 @@ const extractConfigurationNameFromCodeVerifier = (chaine) => {
     return "";
   }
 };
-const version = "7.26.0";
+const version = "7.27.1";
 if (typeof trustedTypes !== "undefined" && typeof trustedTypes.createPolicy === "function") {
   trustedTypes.createPolicy("default", {
     createScriptURL: function(url) {
@@ -526,7 +524,7 @@ const keepAliveAsync = async (event) => {
 };
 async function generateDpopAsync(originalRequest, currentDatabase, url, extrasClaims = {}) {
   const headersExtras = serializeHeaders(originalRequest.headers);
-  if ((currentDatabase == null ? void 0 : currentDatabase.demonstratingProofOfPossessionConfiguration) && currentDatabase.demonstratingProofOfPossessionJwkJson && (!currentDatabase.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent || currentDatabase.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent && headersExtras.dpop)) {
+  if (currentDatabase?.demonstratingProofOfPossessionConfiguration && currentDatabase.demonstratingProofOfPossessionJwkJson && (!currentDatabase.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent || currentDatabase.demonstratingProofOfPossessionOnlyWhenDpopHeaderPresent && headersExtras.dpop)) {
     const dpopConfiguration = currentDatabase.demonstratingProofOfPossessionConfiguration;
     const jwk = currentDatabase.demonstratingProofOfPossessionJwkJson;
     const method = originalRequest.method;
@@ -544,9 +542,12 @@ async function generateDpopAsync(originalRequest, currentDatabase, url, extrasCl
   return headersExtras;
 }
 const handleFetch = (event) => {
+  const bypassedDestinations = ["image", "font", "media", "document", "iframe", "script"];
+  if (bypassedDestinations.includes(event.request.destination)) {
+    return;
+  }
   event.respondWith(
     (async () => {
-      var _a, _b;
       try {
         const originalRequest = event.request;
         const url = normalizeUrl(originalRequest.url);
@@ -564,14 +565,14 @@ const handleFetch = (event) => {
         if (authorization) {
           const split = authorization.split(" ");
           authenticationMode = split[0];
-          if ((_a = split[1]) == null ? void 0 : _a.includes("ACCESS_TOKEN_SECURED_BY_OIDC_SERVICE_WORKER_")) {
+          if (split[1]?.includes("ACCESS_TOKEN_SECURED_BY_OIDC_SERVICE_WORKER_")) {
             key = split[1].split("ACCESS_TOKEN_SECURED_BY_OIDC_SERVICE_WORKER_")[1];
           }
         }
-        const currentDatabaseForRequestAccessToken = currentDatabasesForRequestAccessToken == null ? void 0 : currentDatabasesForRequestAccessToken.find(
+        const currentDatabaseForRequestAccessToken = currentDatabasesForRequestAccessToken?.find(
           (c) => c.configurationName.endsWith(key)
         );
-        if ((_b = currentDatabaseForRequestAccessToken == null ? void 0 : currentDatabaseForRequestAccessToken.tokens) == null ? void 0 : _b.access_token) {
+        if (currentDatabaseForRequestAccessToken?.tokens?.access_token) {
           while (currentDatabaseForRequestAccessToken.tokens && !isTokensValid(currentDatabaseForRequestAccessToken.tokens)) {
             await sleep(200);
           }
@@ -631,7 +632,6 @@ const handleFetch = (event) => {
           const responsePromise = new Promise((resolve, reject) => {
             const clonedRequest = originalRequest.clone();
             clonedRequest.text().then(async (actualBody) => {
-              var _a2;
               let currentDatabase = null;
               try {
                 if (actualBody.includes(TOKEN.REFRESH_TOKEN) || actualBody.includes(TOKEN.ACCESS_TOKEN)) {
@@ -639,7 +639,7 @@ const handleFetch = (event) => {
                   let newBody = actualBody;
                   for (let i = 0; i < numberDatabase; i++) {
                     const currentDb = currentDatabases[i];
-                    if (currentDb == null ? void 0 : currentDb.tokens) {
+                    if (currentDb?.tokens) {
                       const claimsExtras = {
                         ath: await base64urlOfHashOfASCIIEncodingAsync(
                           currentDb.tokens.access_token
@@ -686,7 +686,7 @@ const handleFetch = (event) => {
                     credentials: clonedRequest.credentials,
                     integrity: clonedRequest.integrity
                   });
-                  if (((_a2 = currentDatabase == null ? void 0 : currentDatabase.oidcServerConfiguration) == null ? void 0 : _a2.revocationEndpoint) && url.startsWith(
+                  if (currentDatabase?.oidcServerConfiguration?.revocationEndpoint && url.startsWith(
                     normalizeUrl(currentDatabase.oidcServerConfiguration.revocationEndpoint)
                   )) {
                     const resp = await fetchPromise;
@@ -760,11 +760,11 @@ const handleFetch = (event) => {
   );
 };
 const handleMessage = async (event) => {
-  var _a, _b;
   const port = event.ports[0];
   const data = event.data;
-  if (((_a = event.data) == null ? void 0 : _a.type) === "SKIP_WAITING") {
+  if (event.data?.type === "SKIP_WAITING") {
     await _self.skipWaiting();
+    port?.postMessage?.({});
     return;
   } else if (event.data.type === "claim") {
     _self.clients.claim().then(() => port.postMessage({}));
@@ -864,7 +864,7 @@ const handleMessage = async (event) => {
         if (tokens.refresh_token) {
           tokens.refresh_token = `${TOKEN.REFRESH_TOKEN}_${configurationName}#tabId=${tabId}`;
         }
-        if (((_b = tokens == null ? void 0 : tokens.idTokenPayload) == null ? void 0 : _b.nonce) && currentDatabase.nonce != null) {
+        if (tokens?.idTokenPayload?.nonce && currentDatabase.nonce != null) {
           tokens.idTokenPayload.nonce = `${TOKEN.NONCE_TOKEN}_${configurationName}#tabId=${tabId}`;
         }
         port.postMessage({
