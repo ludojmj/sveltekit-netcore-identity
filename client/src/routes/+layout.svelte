@@ -8,7 +8,7 @@
 <svelte:head>
   <title>sveltekit-netcore-identity</title>
   <meta name="description" content="sveltekit-netcore-identity" />
-  <meta name="keywords" content="SvelteKit .Net8 Identity" />
+  <meta name="keywords" content="SvelteKit .Net10 Identity" />
 </svelte:head>
 
 <div class="container">
