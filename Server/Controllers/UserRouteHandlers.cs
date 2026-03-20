@@ -1,20 +1,28 @@
 using Server.Services.Interfaces;
 using Server.Models;
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc;
 
-[assembly: InternalsVisibleTo("Server.UnitTest")]
 namespace Server.Controllers;
 
 public static class UserRouteHandlers
 {
     public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder builder)
     {
-        builder.MapGet("", GetListAsync);
-        builder.MapPost("", CreateAsync);
-        builder.MapGet("{id}", ReadAsync);
-        builder.MapPut("{id}", UpdateAsync);
-        builder.MapDelete("{id}", DeleteAsync);
+        builder.MapGet("", GetListAsync)
+            .Produces<DirectoryModel>()
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+        builder.MapPost("", CreateAsync)
+            .Produces<UserModel>()
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+        builder.MapGet("{id}", ReadAsync)
+            .Produces<UserModel>()
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+        builder.MapPut("{id}", UpdateAsync)
+            .Produces<UserModel>()
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+        builder.MapDelete("{id}", DeleteAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
         return builder;
     }
 

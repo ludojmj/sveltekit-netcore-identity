@@ -28,11 +28,13 @@ public class TestStuffRoutes
         OtherInfo = "OtherInfo",
         User = CurrentUserModelTest
     };
+    private static readonly Task<DatumModel> TestDatumAsync = Task.FromResult(TestDatum);
 
     private static readonly StuffModel TestStuff = new()
     {
         DatumList = [TestDatum]
     };
+    private static readonly Task<StuffModel> TestStuffAsync = Task.FromResult(TestStuff);
 
     // ***** ***** ***** LIST
     [Theory]
@@ -42,7 +44,7 @@ public class TestStuffRoutes
     {
         // Arrange
         var mockService = Mock.Of<IStuffService>(x =>
-            x.GetListAsync(page) == Task.FromResult(TestStuff));
+            x.GetListAsync(page) == TestStuffAsync);
 
         // Act
         var result = await StuffRouteHandlers.GetListAsync(page, string.Empty, mockService);
@@ -62,7 +64,7 @@ public class TestStuffRoutes
     {
         // Arrange
         var mockService = Mock.Of<IStuffService>(x =>
-            x.SearchListAsync("foo") == Task.FromResult(TestStuff));
+            x.SearchListAsync("foo") == TestStuffAsync);
 
         // Act
         var result = await StuffRouteHandlers.GetListAsync(page, "foo", mockService);
@@ -80,7 +82,7 @@ public class TestStuffRoutes
     {
         // Arrange
         var mockService = Mock.Of<IStuffService>(x =>
-            x.CreateAsync(TestDatum) == Task.FromResult(TestDatum));
+            x.CreateAsync(TestDatum) == TestDatumAsync);
 
         // Act
         var result = await StuffRouteHandlers.CreateAsync(TestDatum, mockService);
@@ -98,7 +100,7 @@ public class TestStuffRoutes
     {
         // Arrange
         var mockService = Mock.Of<IStuffService>(x =>
-            x.ReadAsync(It.IsAny<Guid>()) == Task.FromResult(TestDatum));
+            x.ReadAsync(It.IsAny<Guid>()) == TestDatumAsync);
 
         // Act
         var result = await StuffRouteHandlers.ReadAsync(TestDatum.Id, mockService);
@@ -132,7 +134,7 @@ public class TestStuffRoutes
     {
         // Arrange
         var mockService = Mock.Of<IStuffService>(x =>
-            x.UpdateAsync(It.IsAny<Guid>(), TestDatum) == Task.FromResult(TestDatum));
+            x.UpdateAsync(It.IsAny<Guid>(), TestDatum) == TestDatumAsync);
         Guid existingId = TestDatum.Id;
 
         // Act

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Server.Shared;
 using Xunit;
@@ -9,12 +10,14 @@ namespace Server.UnitTest.Shared;
 
 public class TestErroHandler
 {
+    private readonly ILogger<ErrorHandler> _logger;
     private readonly IHostEnvironment _env;
     private readonly IProblemDetailsService _problemDetailsService;
     private readonly HttpContext _httpContext;
 
     public TestErroHandler()
     {
+        _logger = Mock.Of<ILogger<ErrorHandler>>();
         _env = Mock.Of<IHostEnvironment>();
         _problemDetailsService = Mock.Of<IProblemDetailsService>();
         _httpContext = new DefaultHttpContext();
@@ -29,7 +32,7 @@ public class TestErroHandler
     {
         // Arrange
         Mock.Get(_env).Setup(x => x.EnvironmentName).Returns(env);
-        var errorHandler = new ErrorHandler(_env, _problemDetailsService);
+        var errorHandler = new ErrorHandler(_logger, _env, _problemDetailsService);
         var exception = new KeyNotFoundException("Not found");
 
         // Act
@@ -49,7 +52,7 @@ public class TestErroHandler
     {
         // Arrange
         Mock.Get(_env).Setup(x => x.EnvironmentName).Returns(env);
-        var errorHandler = new ErrorHandler(_env, _problemDetailsService);
+        var errorHandler = new ErrorHandler(_logger, _env, _problemDetailsService);
         dynamic exception = isBusiness ? new BusinessException("Business error") : new DbUpdateException("DB Update error");
 
         // Act
@@ -67,7 +70,7 @@ public class TestErroHandler
     {
         // Arrange
         Mock.Get(_env).Setup(x => x.EnvironmentName).Returns(env);
-        var errorHandler = new ErrorHandler(_env, _problemDetailsService);
+        var errorHandler = new ErrorHandler(_logger, _env, _problemDetailsService);
         var exception = new DivideByZeroException("Unhandled exception");
 
         // Act

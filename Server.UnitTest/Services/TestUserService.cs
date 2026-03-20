@@ -52,8 +52,8 @@ public class TestUserService
     public async Task UserService_GetListAsync_ShouldReturn_Ok()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = await _userService.GetListAsync(1);
@@ -69,8 +69,8 @@ public class TestUserService
     public async Task UserService_SearchListAsync_ShouldReturn_Ok()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = await _userService.SearchListAsync("GIVENNAME");
@@ -96,8 +96,8 @@ public class TestUserService
             dbUserList.Add(tpmUser);
         }
 
-        await _dbContext.AddRangeAsync(dbUserList);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddRangeAsync(dbUserList, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = _userService.SearchListAsync("GIVENNAME");
@@ -129,8 +129,8 @@ public class TestUserService
     public async Task UserService_CreateAsync_ShouldThrow_InvalidOperationException()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = _userService.CreateAsync(TestUserModel);
@@ -211,8 +211,8 @@ public class TestUserService
     public async Task UserService_ReadAsync_ShouldReturn_Ok()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = await _userService.ReadAsync("11");
@@ -241,8 +241,8 @@ public class TestUserService
     public async Task UserService_UpdateAsync_ShouldReturn_Ok()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var serviceResult = await _userService.UpdateAsync("11", TestUserModel);
@@ -334,12 +334,12 @@ public class TestUserService
     public async Task UserService_DeleteAsync_ShouldReturn_Ok()
     {
         // Arrange
-        await _dbContext.AddAsync(_dbUser);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.AddAsync(_dbUser, TestContext.Current.CancellationToken);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         await _userService.DeleteAsync("11");
-        var actual = await _dbContext.TUsers.FirstOrDefaultAsync(x => x.UsrId == "1");
+        var actual = await _dbContext.TUsers.FirstOrDefaultAsync(x => x.UsrId == "11", TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Null(actual);
