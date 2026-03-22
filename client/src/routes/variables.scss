@@ -23,12 +23,12 @@ $link: #000;
 input:valid,
 select:valid,
 textarea:valid {
-  border-color: $success;
+  border-color: $success !important;
 }
 
 input:invalid,
 select:invalid {
-  border-color: $danger;
+  border-color: $danger !important;
 }
 
 .enable-line-break {
